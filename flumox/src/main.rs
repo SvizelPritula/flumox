@@ -1,4 +1,4 @@
-use time::{OffsetDateTime, PrimitiveDateTime};
+use time::OffsetDateTime;
 use time_expr::{eval, EvalError, Resolve, Value};
 
 struct SampleResolver;
@@ -8,7 +8,6 @@ impl Resolve for SampleResolver {
         match path {
             &["now"] => {
                 let time = OffsetDateTime::now_utc();
-                let time = PrimitiveDateTime::new(time.date(), time.time());
 
                 Ok(Value::Since(time))
             }

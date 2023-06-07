@@ -1,16 +1,16 @@
 use std::ops::Add;
 
-use time::{Duration, PrimitiveDateTime};
+use time::{Duration, OffsetDateTime};
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, PartialOrd, Ord)]
 pub enum Value {
     Always,
-    Since(PrimitiveDateTime),
+    Since(OffsetDateTime),
     Never,
 }
 
 impl Value {
-    pub fn to_bool(&self, at: PrimitiveDateTime) -> bool {
+    pub fn to_bool(&self, at: OffsetDateTime) -> bool {
         match *self {
             Value::Always => true,
             Value::Since(time) => at >= time,

@@ -1,4 +1,4 @@
-use time::{Date, Duration, PrimitiveDateTime, Time, UtcOffset};
+use time::{Date, Duration, OffsetDateTime, PrimitiveDateTime, Time, UtcOffset};
 
 use crate::{
     parse::{expect, expect_number, tokens::Token, unexpected},
@@ -53,7 +53,7 @@ fn get_unit(name: &str) -> Option<Duration> {
     }
 }
 
-pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<PrimitiveDateTime, EvalError> {
+pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<OffsetDateTime, EvalError> {
     let date = {
         let year = first.try_into().map_err(|_| EvalError::LiteralOutOfRange)?;
         expect(tokens, TokenType::Dash)?;
@@ -91,9 +91,7 @@ pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<PrimitiveDate
         UtcOffset::from_hms(hours, minutes, seconds).map_err(|_| EvalError::LiteralOutOfRange)?
     };
 
-    let datetime = PrimitiveDateTime::new(date, time)
-        .checked_sub(Duration::seconds(offset.whole_seconds().into()))
-        .ok_or(EvalError::LiteralOutOfRange)?;
+    let datetime = PrimitiveDateTime::new(date, time).assume_offset(offset);
 
     Ok(datetime)
 }
