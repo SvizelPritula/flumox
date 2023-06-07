@@ -10,6 +10,7 @@ pub enum Value {
 }
 
 impl Value {
+    #[inline]
     pub fn to_bool(&self, at: OffsetDateTime) -> bool {
         match *self {
             Value::Always => true,
@@ -29,6 +30,21 @@ impl Add<Duration> for Value {
                 None => Value::Never,
             },
             other => other,
+        }
+    }
+}
+
+impl From<OffsetDateTime> for Value {
+    fn from(value: OffsetDateTime) -> Self {
+        Value::Since(value)
+    }
+}
+
+impl From<Option<OffsetDateTime>> for Value {
+    fn from(value: Option<OffsetDateTime>) -> Self {
+        match value {
+            Some(value) => Value::Since(value),
+            None => Value::Never,
         }
     }
 }

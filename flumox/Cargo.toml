@@ -4,5 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-time = { version = "0.3.21", features = ["macros", "formatting"] }
+indexmap = "1.9.3"
+serde = { version = "1.0.163", features = ["derive"] }
+time = { version = "0.3.21", features = ["serde"] }
 time-expr = { path = "../time-expr" }
