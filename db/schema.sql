@@ -28,7 +28,7 @@ CREATE TABLE public.widget
         REFERENCES public.game (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-    UNIQUE (name)
+    UNIQUE (game, name)
 );
 
 CREATE TABLE public.state
