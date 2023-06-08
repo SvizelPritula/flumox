@@ -12,7 +12,7 @@ pub fn parse_duration<'a>(tokens: &mut Iter<'a>) -> Result<Duration, EvalError> 
     let mut parsed_some = false;
 
     loop {
-        let Some(Ok(Token::Number(num))) = tokens.peek() else {
+        let Some(Ok((Token::Number(num), pos))) = tokens.peek() else {
             if parsed_some {
                 break;
             } else {
@@ -21,20 +21,26 @@ pub fn parse_duration<'a>(tokens: &mut Iter<'a>) -> Result<Duration, EvalError> 
         };
 
         let num = *num;
+        let pos = *pos;
         tokens.next();
 
         let unit = match tokens.next().transpose()? {
-            Some(Token::Word(word)) => Ok(word),
+            Some((Token::Word(word), _)) => Ok(word),
             other => Err(unexpected(other)),
         }?;
 
-        let num = num.try_into().map_err(|_| EvalError::LiteralOutOfRange)?;
-        let unit = get_unit(unit).ok_or(EvalError::UnknownUnit)?;
+        let num = num
+            .try_into()
+            .map_err(|_| EvalError::LiteralOutOfRange { pos })?;
+        let unit = get_unit(unit).ok_or(EvalError::UnknownUnit { unit: unit.into() })?;
 
-        let duration = unit.checked_mul(num).ok_or(EvalError::LiteralOutOfRange)?;
+        let duration = unit
+            .checked_mul(num)
+            .ok_or(EvalError::LiteralOutOfRange { pos })?;
+
         total = total
             .checked_add(duration)
-            .ok_or(EvalError::LiteralOutOfRange)?;
+            .ok_or(EvalError::LiteralOutOfRange { pos })?;
 
         parsed_some = true;
     }
@@ -53,17 +59,25 @@ fn get_unit(name: &str) -> Option<Duration> {
     }
 }
 
-pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<OffsetDateTime, EvalError> {
+pub fn parse_date<'a>(
+    tokens: &mut Iter<'a>,
+    first: u64,
+    pos: usize,
+) -> Result<OffsetDateTime, EvalError> {
     let date = {
-        let year = first.try_into().map_err(|_| EvalError::LiteralOutOfRange)?;
+        let year = first
+            .try_into()
+            .map_err(|_| EvalError::LiteralOutOfRange { pos })?;
+
         expect(tokens, TokenType::Dash)?;
         let month = expect_number(tokens)?;
         expect(tokens, TokenType::Dash)?;
         let day = expect_number(tokens)?;
 
-        let month = u8::try_into(month).map_err(|_| EvalError::LiteralOutOfRange)?;
+        let month = u8::try_into(month).map_err(|_| EvalError::LiteralOutOfRange { pos })?;
 
-        Date::from_calendar_date(year, month, day).map_err(|_| EvalError::LiteralOutOfRange)?
+        Date::from_calendar_date(year, month, day)
+            .map_err(|_| EvalError::LiteralOutOfRange { pos })?
     };
 
     let time = {
@@ -72,13 +86,13 @@ pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<OffsetDateTim
         let minute = expect_number(tokens)?;
         let second = parse_optional_time_component(tokens, 0)?;
 
-        Time::from_hms(hour, minute, second).map_err(|_| EvalError::LiteralOutOfRange)?
+        Time::from_hms(hour, minute, second).map_err(|_| EvalError::LiteralOutOfRange { pos })?
     };
 
     let offset = {
         let negative = match tokens.next().transpose()? {
-            Some(Token::Plus) => Ok(false),
-            Some(Token::Dash) => Ok(true),
+            Some((Token::Plus, _)) => Ok(false),
+            Some((Token::Dash, _)) => Ok(true),
             other => Err(unexpected(other)),
         }?;
 
@@ -88,7 +102,8 @@ pub fn parse_date<'a>(tokens: &mut Iter<'a>, first: u64) -> Result<OffsetDateTim
 
         let hours = if negative { -hours } else { hours };
 
-        UtcOffset::from_hms(hours, minutes, seconds).map_err(|_| EvalError::LiteralOutOfRange)?
+        UtcOffset::from_hms(hours, minutes, seconds)
+            .map_err(|_| EvalError::LiteralOutOfRange { pos })?
     };
 
     let datetime = PrimitiveDateTime::new(date, time).assume_offset(offset);
@@ -100,7 +115,10 @@ fn parse_optional_time_component<'a, I>(tokens: &mut Iter<'a>, default: I) -> Re
 where
     I: TryFrom<u64>,
 {
-    if tokens.next_if(|t| matches!(t, Ok(Token::Colon))).is_some() {
+    if tokens
+        .next_if(|t| matches!(t, Ok((Token::Colon, _))))
+        .is_some()
+    {
         expect_number(tokens)
     } else {
         Ok(default)

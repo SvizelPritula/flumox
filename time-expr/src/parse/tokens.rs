@@ -1,6 +1,6 @@
 use std::{
     fmt::{self, Display, Formatter},
-    iter::Peekable,
+    iter::{Enumerate, Peekable},
     str::CharIndices,
 };
 
@@ -22,43 +22,46 @@ pub enum Token<'a> {
 
 pub struct Tokens<'a> {
     string: &'a str,
-    chars: Peekable<CharIndices<'a>>,
+    chars: Peekable<Enumerate<CharIndices<'a>>>,
 }
 
 impl<'a> Iterator for Tokens<'a> {
-    type Item = Result<Token<'a>, EvalError>;
+    type Item = Result<(Token<'a>, usize), EvalError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            let Some((idx, c)) = self.chars.next() else {
+            let Some((idx, (pos, c))) = self.chars.next() else {
                 break None;
             };
 
-            break Some(match c {
-                c if c.is_whitespace() => continue,
-                c @ '0'..='9' => self.parse_number(c),
-                c if c.is_alphabetic() => Ok(self.parse_word(idx)),
-                '_' => Ok(self.parse_word(idx)),
-                '|' => Ok(Token::Or),
-                '&' => Ok(Token::And),
-                '+' => Ok(Token::Plus),
-                '-' => Ok(Token::Dash),
-                ':' => Ok(Token::Colon),
-                '.' => Ok(Token::Dot),
-                '(' => Ok(Token::LeftParen),
-                ')' => Ok(Token::RightParen),
-                other => Err(EvalError::UnknownChar { char: other }),
-            });
+            break Some(
+                match c {
+                    c if c.is_whitespace() => continue,
+                    c @ '0'..='9' => self.parse_number(c, pos),
+                    c if c.is_alphabetic() => Ok(self.parse_word(idx)),
+                    '_' => Ok(self.parse_word(idx)),
+                    '|' => Ok(Token::Or),
+                    '&' => Ok(Token::And),
+                    '+' => Ok(Token::Plus),
+                    '-' => Ok(Token::Dash),
+                    ':' => Ok(Token::Colon),
+                    '.' => Ok(Token::Dot),
+                    '(' => Ok(Token::LeftParen),
+                    ')' => Ok(Token::RightParen),
+                    other => Err(EvalError::UnknownChar { char: other }),
+                }
+                .map(|t| (t, pos)),
+            );
         }
     }
 }
 
 impl<'a> Tokens<'a> {
-    fn parse_number(&mut self, first: char) -> Result<Token<'a>, EvalError> {
+    fn parse_number(&mut self, first: char, pos: usize) -> Result<Token<'a>, EvalError> {
         let mut result = first as u64 - '0' as u64;
 
         loop {
-            match self.chars.peek().map(|(_i, c)| c).copied() {
+            match self.chars.peek().map(|(_i, (_p, c))| c).copied() {
                 Some(c @ '0'..='9') => {
                     self.chars.next();
 
@@ -67,7 +70,7 @@ impl<'a> Tokens<'a> {
                     result = result
                         .checked_mul(10)
                         .and_then(|r| r.checked_add(value))
-                        .ok_or(EvalError::LiteralOutOfRange)?;
+                        .ok_or(EvalError::LiteralOutOfRange { pos })?;
                 }
                 Some('_') => {
                     self.chars.next();
@@ -81,7 +84,7 @@ impl<'a> Tokens<'a> {
 
     fn parse_word(&mut self, start: usize) -> Token<'a> {
         loop {
-            if let Some((i, c)) = self.chars.peek().copied() {
+            if let Some((i, (_p, c))) = self.chars.peek().copied() {
                 if c.is_alphanumeric() || c == '-' || c == '_' {
                     self.chars.next();
                     continue;
@@ -97,7 +100,7 @@ impl<'a> Tokens<'a> {
     pub fn new(string: &'a str) -> Tokens<'a> {
         Tokens {
             string,
-            chars: string.char_indices().peekable(),
+            chars: string.char_indices().enumerate().peekable(),
         }
     }
 }

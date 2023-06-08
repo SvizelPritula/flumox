@@ -45,7 +45,7 @@ pub struct Cache(HashMap<String, EvaluationState>);
 impl<'a> Resolve for Context<'a> {
     fn resolve(&mut self, path: &[&str]) -> EvalResult {
         let Some((module, subpath)) = path.split_first() else {
-            return Err(EvalError::UnknownPath);
+            return Err(EvalError::UnknownPath { path: String::new().into() });
         };
 
         let module = match (module, self.this) {
@@ -53,20 +53,17 @@ impl<'a> Resolve for Context<'a> {
             (other, _) => other,
         };
 
-        let mut key = module.to_owned();
-
-        for module in subpath {
-            key.push('.');
-            key.push_str(module);
-        }
+        let key = Context::path_to_string(module, subpath);
 
         match self.cache.get(&key) {
-            Some(EvaluationState::Evaluating) => Err(EvalError::CircularDependency),
+            Some(EvaluationState::Evaluating) => {
+                Err(EvalError::CircularDependency { path: key.into() })
+            }
             Some(EvaluationState::Evaluated(value)) => Ok(*value),
             None => {
                 self.cache.insert(key.clone(), EvaluationState::Evaluating);
 
-                let result = self.resolve_raw(module, subpath);
+                let result = self.resolve_raw(module, subpath, &key);
 
                 if let Ok(value) = result {
                     self.cache.insert(key, EvaluationState::Evaluated(value));
@@ -79,12 +76,14 @@ impl<'a> Resolve for Context<'a> {
 }
 
 impl<'a> Context<'a> {
-    fn resolve_raw(&mut self, module: &str, path: &[&str]) -> EvalResult {
+    fn resolve_raw(&mut self, module: &str, path: &[&str], path_str: &str) -> EvalResult {
         let instance = self
             .game
             .instances
             .get(module)
-            .ok_or(EvalError::UnknownPath)?;
+            .ok_or(EvalError::UnknownPath {
+                path: path_str.into(),
+            })?;
 
         let context = Context {
             cache: self.cache,
@@ -97,6 +96,23 @@ impl<'a> Context<'a> {
 
     pub fn eval(&mut self, expr: &Expr) -> EvalResult {
         eval(&expr.0, self)
+    }
+
+    fn path_to_string(module: &str, subpath: &[&str]) -> String {
+        let mut string = module.to_owned();
+
+        for module in subpath {
+            string.push('.');
+            string.push_str(module);
+        }
+
+        string
+    }
+
+    pub fn unknown_path(&self, path: &[&str]) -> EvalError {
+        EvalError::UnknownPath {
+            path: Context::path_to_string(self.this.unwrap_or("this"), path).into(),
+        }
     }
 
     pub fn new(game: &'a GameState, cache: &'a mut Cache) -> Self {

@@ -1,6 +1,5 @@
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
-use time_expr::EvalError;
 
 use crate::{
     expr::{Context, EvalResult, Expr},
@@ -50,7 +49,7 @@ impl Config {
         match path {
             &["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
             &["visible"] => context.eval(&self.visible),
-            _ => Err(EvalError::UnknownPath),
+            _ => Err(context.unknown_path(path)),
         }
     }
 }
