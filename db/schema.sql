@@ -27,7 +27,8 @@ CREATE TABLE public.widget
     FOREIGN KEY (game)
         REFERENCES public.game (id) MATCH SIMPLE
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    UNIQUE (name)
 );
 
 CREATE TABLE public.state
@@ -37,6 +38,10 @@ CREATE TABLE public.state
     widget uuid NOT NULL,
     state jsonb NOT NULL,
     PRIMARY KEY (game, team, widget),
+    FOREIGN KEY (game)
+        REFERENCES public.game (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
     FOREIGN KEY (game, team)
         REFERENCES public.team (game, id) MATCH SIMPLE
         ON UPDATE CASCADE
