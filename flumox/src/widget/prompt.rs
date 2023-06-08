@@ -37,6 +37,7 @@ struct Style {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SolutionDetails {
+    #[serde(with = "time::serde::rfc3339")]
     time: OffsetDateTime,
     canonical_text: String,
 }

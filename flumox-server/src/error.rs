@@ -6,6 +6,7 @@ use axum::{
 use flumox::StateMismatchError;
 use serde::Serialize;
 use thiserror::Error;
+use time_expr::EvalError;
 
 use std::error::Error;
 
@@ -22,6 +23,11 @@ pub enum InternalError {
     BadStateType {
         #[from]
         source: StateMismatchError,
+    },
+    #[error("failed to evaluate expression")]
+    Eval {
+        #[from]
+        source: EvalError,
     },
 }
 
@@ -53,6 +59,7 @@ impl IntoResponse for InternalError {
                 InternalError::Database { .. } => Type::Database,
                 InternalError::Pool => Type::Database,
                 InternalError::BadStateType { .. } => Type::BadState,
+                InternalError::Eval { .. } => Type::BadState,
             },
         };
 
