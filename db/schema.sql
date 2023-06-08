@@ -21,14 +21,14 @@ CREATE TABLE public.widget
 (
     game uuid NOT NULL,
     id uuid NOT NULL,
-    name uuid NOT NULL,
+    ident text NOT NULL,
     config jsonb NOT NULL,
     PRIMARY KEY (game, id),
     FOREIGN KEY (game)
         REFERENCES public.game (id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE RESTRICT,
-    UNIQUE (game, name)
+    UNIQUE (game, ident)
 );
 
 CREATE TABLE public.state

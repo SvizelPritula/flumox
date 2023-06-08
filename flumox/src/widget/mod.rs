@@ -17,7 +17,8 @@ pub enum State {
     Prompt(prompt::State),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub enum Instance {
     Prompt(prompt::Config, prompt::State),
 }

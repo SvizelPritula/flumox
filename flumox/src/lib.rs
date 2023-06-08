@@ -7,4 +7,4 @@ mod widget;
 pub use error::{EvalResult, StateMismatchError};
 pub use expr::{Cache, Context};
 pub use game::GameState;
-pub use widget::{dummy, Config, Instance, View};
+pub use widget::{dummy, Config, Instance, State, View};
