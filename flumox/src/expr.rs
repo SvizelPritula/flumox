@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
 use time_expr::{eval, EvalError, Resolve, Value};
 
-use crate::game::GameState;
+use crate::{error::EvalResult, game::GameState};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(transparent)]
@@ -23,8 +23,6 @@ where
         Expr(value.into())
     }
 }
-
-pub type EvalResult = Result<Value, EvalError>;
 
 #[derive(Debug)]
 enum EvaluationState {

@@ -2,8 +2,9 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::{
-    expr::{Context, EvalResult, Expr},
+    expr::{Context, Expr},
     solution::Solution,
+    EvalResult,
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]

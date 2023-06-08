@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
-use crate::expr::{Context, EvalResult};
+use crate::{error::StateMismatchError, expr::Context, EvalResult};
 
 mod prompt;
 
@@ -9,6 +9,12 @@ mod prompt;
 #[serde(rename_all = "kebab-case", tag = "type")]
 pub enum Config {
     Prompt(prompt::Config),
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case", tag = "type")]
+pub enum State {
+    Prompt(prompt::State),
 }
 
 #[derive(Debug, Clone)]
@@ -29,6 +35,14 @@ impl Config {
                 let state = config.default_state();
                 Instance::Prompt(config, state)
             }
+        }
+    }
+
+    pub fn instance(self, state: State) -> Result<Instance, StateMismatchError> {
+        match (self, state) {
+            (Config::Prompt(c), State::Prompt(s)) => Ok(Instance::Prompt(c, s)),
+            #[allow(unreachable_patterns)]
+            _ => Err(StateMismatchError),
         }
     }
 }
