@@ -5,7 +5,9 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.71"
+async-trait = "0.1.68"
 axum = "0.6.18"
+deadpool-postgres = "0.10.5"
 flumox = { path = "../flumox" }
 indexmap = "1.9.3"
 serde = { version = "1.0.164", features = ["derive"] }
