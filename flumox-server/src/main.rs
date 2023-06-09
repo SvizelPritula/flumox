@@ -19,7 +19,7 @@ async fn serve(db: Pool) -> Result<()> {
     let api = Router::new()
         .route("/login", post(api::login))
         .route("/me", get(api::me))
-        .route("/debug", get(api::debug))
+        .route("/view", get(api::view))
         .with_state(db);
 
     let app = Router::new().nest("/api", api);
