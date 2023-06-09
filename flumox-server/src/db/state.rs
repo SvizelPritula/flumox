@@ -1,4 +1,4 @@
-use deadpool_postgres::Transaction;
+use deadpool_postgres::Client;
 use flumox::{Config, GameState};
 use indexmap::IndexMap;
 use tokio_postgres::types::Json;
@@ -15,7 +15,7 @@ const LOAD_STATE: &str = concat!(
 );
 
 pub async fn load_state(
-    db: &mut Transaction<'_>,
+    db: &mut Client,
     game: Uuid,
     team: Uuid,
 ) -> Result<GameState, InternalError> {

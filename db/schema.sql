@@ -60,7 +60,8 @@ CREATE TABLE public.session
     id uuid NOT NULL,
     game uuid NOT NULL,
     team uuid NOT NULL,
-    key bytea NOT NULL,
+    token bytea NOT NULL,
+    created timestamp with time zone NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (game, team)
         REFERENCES public.team (game, id) MATCH SIMPLE

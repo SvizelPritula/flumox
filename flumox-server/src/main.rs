@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use anyhow::Result;
-use axum::{routing::get, Router, Server};
+use axum::{routing::{get, post}, Router, Server};
 use deadpool_postgres::{Manager, Pool};
 use tokio_postgres::{Config, NoTls};
 
@@ -9,9 +9,12 @@ mod api;
 mod db;
 mod error;
 mod extract;
+mod session;
+mod types;
 
 async fn serve(db: Pool) -> Result<()> {
     let api = Router::new()
+        .route("/login", post(api::login))
         .route("/debug", get(api::debug))
         .with_state(db);
 
