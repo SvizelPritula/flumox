@@ -1,1 +1,1 @@
-TRUNCATE game, team, widget, state;
+TRUNCATE game, team, widget, state, session;

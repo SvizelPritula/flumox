@@ -10,11 +10,13 @@ CREATE TABLE public.team
     game uuid NOT NULL,
     id uuid NOT NULL,
     name text NOT NULL,
+    access_code text NOT NULL,
     PRIMARY KEY (game, id),
     FOREIGN KEY (game)
         REFERENCES public.game (id) MATCH SIMPLE
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE RESTRICT,
+    UNIQUE (access_code)
 );
 
 CREATE TABLE public.widget
@@ -51,4 +53,17 @@ CREATE TABLE public.state
         ON UPDATE CASCADE
         ON DELETE CASCADE
         NOT VALID
+);
+
+CREATE TABLE public.session
+(
+    id uuid NOT NULL,
+    game uuid NOT NULL,
+    team uuid NOT NULL,
+    key bytea NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (game, team)
+        REFERENCES public.team (game, id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
 );

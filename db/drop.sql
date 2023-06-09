@@ -1,1 +1,1 @@
-DROP TABLE game, team, widget, state;
+DROP TABLE game, team, widget, state, session;
