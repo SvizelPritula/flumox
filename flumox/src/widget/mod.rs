@@ -1,7 +1,11 @@
 use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
 
-use crate::{error::StateMismatchError, expr::Context, EvalResult};
+use crate::{
+    error::{StateMismatchError, ViewResult},
+    expr::Environment,
+    view_context::ViewContext,
+    EvalResult,
+};
 
 mod prompt;
 
@@ -49,14 +53,17 @@ impl Config {
 }
 
 impl Instance {
-    pub fn resolve(&self, path: &[&str], context: Context) -> EvalResult {
+    pub fn resolve(&self, path: &[&str], env: Environment) -> EvalResult {
         match self {
-            Instance::Prompt(c, s) => c.resolve(s, path, context),
+            Instance::Prompt(c, s) => c.resolve(s, path, env),
         }
     }
-}
 
-pub fn dummy(visible: &str, solved: Option<OffsetDateTime>) -> Instance {
-    let (config, state) = prompt::dummy(visible, solved);
-    Instance::Prompt(config, state)
+    pub fn view(&self, ctx: ViewContext) -> ViewResult<View> {
+        let view = match self {
+            Instance::Prompt(c, s) => c.view(s, ctx)?.map(|v| View::Prompt(v)),
+        };
+
+        Ok(view)
+    }
 }

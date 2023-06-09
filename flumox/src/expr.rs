@@ -31,7 +31,7 @@ enum EvaluationState {
 }
 
 #[derive(Debug)]
-pub struct Context<'a> {
+pub struct Environment<'a> {
     cache: &'a mut HashMap<String, EvaluationState>,
     pub this: Option<&'a str>,
     pub game: &'a GameState,
@@ -40,7 +40,7 @@ pub struct Context<'a> {
 #[derive(Debug, Default)]
 pub struct Cache(HashMap<String, EvaluationState>);
 
-impl<'a> Resolve for Context<'a> {
+impl<'a> Resolve for Environment<'a> {
     fn resolve(&mut self, path: &[&str]) -> EvalResult {
         let Some((module, subpath)) = path.split_first() else {
             return Err(EvalError::UnknownPath { path: String::new().into() });
@@ -51,7 +51,13 @@ impl<'a> Resolve for Context<'a> {
             (other, _) => other,
         };
 
-        let key = Context::path_to_string(module, subpath);
+        self.resolve_cached(module, subpath)
+    }
+}
+
+impl<'a> Environment<'a> {
+    fn resolve_cached(&mut self, module: &str, path: &[&str]) -> EvalResult {
+        let key = Environment::path_to_string(module, path);
 
         match self.cache.get(&key) {
             Some(EvaluationState::Evaluating) => {
@@ -61,7 +67,7 @@ impl<'a> Resolve for Context<'a> {
             None => {
                 self.cache.insert(key.clone(), EvaluationState::Evaluating);
 
-                let result = self.resolve_raw(module, subpath, &key);
+                let result = self.resolve_raw(module, path, &key);
 
                 if let Ok(value) = result {
                     self.cache.insert(key, EvaluationState::Evaluated(value));
@@ -71,9 +77,7 @@ impl<'a> Resolve for Context<'a> {
             }
         }
     }
-}
 
-impl<'a> Context<'a> {
     fn resolve_raw(&mut self, module: &str, path: &[&str], path_str: &str) -> EvalResult {
         let instance = self
             .game
@@ -83,13 +87,17 @@ impl<'a> Context<'a> {
                 path: path_str.into(),
             })?;
 
-        let context = Context {
+        let context = Environment {
             cache: self.cache,
             this: Some(module),
             game: self.game,
         };
 
         instance.resolve(path, context)
+    }
+
+    pub fn own(&mut self, path: &[&str]) -> EvalResult {
+        self.resolve_cached(self.this.unwrap_or("this"), path)
     }
 
     pub fn eval(&mut self, expr: &Expr) -> EvalResult {
@@ -109,14 +117,14 @@ impl<'a> Context<'a> {
 
     pub fn unknown_path(&self, path: &[&str]) -> EvalError {
         EvalError::UnknownPath {
-            path: Context::path_to_string(self.this.unwrap_or("this"), path).into(),
+            path: Environment::path_to_string(self.this.unwrap_or("this"), path).into(),
         }
     }
 
-    pub fn new(game: &'a GameState, cache: &'a mut Cache) -> Self {
-        Context {
+    pub fn new(game: &'a GameState, cache: &'a mut Cache, this: &'a str) -> Self {
+        Environment {
             cache: &mut cache.0,
-            this: None,
+            this: Some(this),
             game,
         }
     }

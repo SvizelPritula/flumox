@@ -2,8 +2,10 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::{
-    expr::{Context, Expr},
+    error::ViewResult,
+    expr::{Environment, Expr},
     solution::Solution,
+    view_context::ViewContext,
     EvalResult,
 };
 
@@ -47,27 +49,25 @@ impl Config {
         State::default()
     }
 
-    pub fn resolve(&self, state: &State, path: &[&str], mut context: Context) -> EvalResult {
+    pub fn resolve(&self, state: &State, path: &[&str], mut env: Environment) -> EvalResult {
         match path {
             &["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
-            &["visible"] => context.eval(&self.visible),
-            _ => Err(context.unknown_path(path)),
+            &["visible"] => env.eval(&self.visible),
+            _ => Err(env.unknown_path(path)),
         }
     }
-}
 
-pub fn dummy(visible: &str, solved: Option<OffsetDateTime>) -> (Config, State) {
-    (
-        Config {
-            style: Style::default(),
-            solutions: vec![],
-            visible: Expr(String::from(visible)),
-        },
-        State {
-            solved: solved.map(|time| SolutionDetails {
-                time,
-                canonical_text: String::default(),
-            }),
-        },
-    )
+    pub fn view(&self, state: &State, mut ctx: ViewContext) -> ViewResult<View> {
+        let visible = ctx.env.own(&["visible"])?;
+        let visible = ctx.time.if_after(visible);
+
+        if !visible {
+            return Ok(None);
+        }
+
+        Ok(Some(View {
+            style: self.style.clone(),
+            disabled: state.solved.is_some(),
+        }))
+    }
 }

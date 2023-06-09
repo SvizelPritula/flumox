@@ -5,14 +5,14 @@ use axum::{routing::get, Router, Server};
 use deadpool_postgres::{Manager, Pool};
 use tokio_postgres::{Config, NoTls};
 
+mod api;
 mod db;
 mod error;
 mod extract;
-mod paths;
 
 async fn serve(db: Pool) -> Result<()> {
     let api = Router::new()
-        .route("/debug", get(paths::debug))
+        .route("/debug", get(api::debug))
         .with_state(db);
 
     let app = Router::new().nest("/api", api);

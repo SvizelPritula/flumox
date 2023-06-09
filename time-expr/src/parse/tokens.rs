@@ -121,6 +121,7 @@ pub enum TokenType {
 }
 
 impl TokenType {
+    #[inline(always)]
     pub(super) fn new(token: Option<Token>) -> TokenType {
         match token {
             Some(Token::Word(_)) => TokenType::Word,
