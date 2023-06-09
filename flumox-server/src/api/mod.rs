@@ -7,7 +7,7 @@ use crate::{db::load_state, error::InternalError, extract::DbConnection};
 
 mod session;
 
-pub use session::login;
+pub use session::{login, me};
 
 const GAME: Uuid = uuid!("00000000-0000-0000-0000-000000000000");
 const TEAM: Uuid = uuid!("00000000-0000-0000-0000-000000000000");

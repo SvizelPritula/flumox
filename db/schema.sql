@@ -66,5 +66,5 @@ CREATE TABLE public.session
     FOREIGN KEY (game, team)
         REFERENCES public.team (game, id) MATCH SIMPLE
         ON UPDATE CASCADE
-        ON DELETE RESTRICT
+        ON DELETE CASCADE
 );

@@ -2,11 +2,12 @@ use std::str::FromStr;
 
 use base64::{
     engine::{general_purpose::URL_SAFE_NO_PAD, GeneralPurpose},
-    DecodeSliceError, Engine,
+    Engine,
 };
 use getrandom::getrandom;
 use serde::{Serialize, Serializer};
 use thiserror::Error;
+use uuid::Uuid;
 
 pub const SESSION_BYTES: usize = 16;
 
@@ -33,13 +34,13 @@ impl FromStr for SessionToken {
     type Err = ParseSessionError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut buf = [0; SESSION_BYTES];
+        let buf = SessionToken::BASE64
+            .decode(s)
+            .map_err(|_| ParseSessionError::InvalidBase64)?
+            .try_into()
+            .map_err(|_| ParseSessionError::BadLength)?;
 
-        match SessionToken::BASE64.decode_slice(s, &mut buf) {
-            Ok(SESSION_BYTES) => Ok(SessionToken(buf)),
-            Ok(_) | Err(DecodeSliceError::OutputSliceTooSmall) => Err(ParseSessionError::BadLength),
-            Err(DecodeSliceError::DecodeError(_)) => Err(ParseSessionError::InvalidBase64),
-        }
+        Ok(SessionToken(buf))
     }
 }
 
@@ -58,4 +59,10 @@ pub enum ParseSessionError {
     InvalidBase64,
     #[error("bad length")]
     BadLength,
+}
+
+#[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq)]
+pub struct Session {
+    pub game: Uuid,
+    pub team: Uuid,
 }

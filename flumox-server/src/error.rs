@@ -3,6 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use deadpool_postgres::PoolError;
 use flumox::StateMismatchError;
 use serde::Serialize;
 use thiserror::Error;
@@ -31,6 +32,17 @@ pub enum InternalError {
     },
 }
 
+#[derive(Serialize)]
+pub struct ErrorResponse<E> {
+    pub reason: E,
+}
+
+impl<E> ErrorResponse<E> {
+    pub fn new(error: E) -> Self {
+        ErrorResponse { reason: error }
+    }
+}
+
 impl IntoResponse for InternalError {
     fn into_response(self) -> Response {
         eprintln!("Error: {self}");
@@ -49,12 +61,7 @@ impl IntoResponse for InternalError {
             BadState,
         }
 
-        #[derive(Serialize)]
-        struct Payload {
-            reason: Type,
-        }
-
-        let response = Payload {
+        let response = ErrorResponse {
             reason: match self {
                 InternalError::Database { .. } => Type::Database,
                 InternalError::Pool => Type::Database,
@@ -64,5 +71,14 @@ impl IntoResponse for InternalError {
         };
 
         (StatusCode::INTERNAL_SERVER_ERROR, Json(response)).into_response()
+    }
+}
+
+impl From<PoolError> for InternalError {
+    fn from(value: PoolError) -> Self {
+        match value {
+            PoolError::Backend(source) => InternalError::Database { source },
+            _ => InternalError::Pool,
+        }
     }
 }

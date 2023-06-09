@@ -1,8 +1,13 @@
 use axum::Json;
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 use crate::{
-    db, error::InternalError, extract::DbConnection, session::SessionToken, types::TeamInfo,
+    db,
+    error::InternalError,
+    extract::DbConnection,
+    session::{Session, SessionToken},
+    types::TeamInfo,
 };
 
 #[derive(Debug, Clone, Serialize)]
@@ -28,4 +33,15 @@ pub async fn login(
         Ok(None) => Ok(Json(LoginResponse::IncorrectKey)),
         Err(error) => Err(error),
     }
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct TeamInfoResponse {
+    game: Uuid,
+    team: Uuid,
+}
+
+pub async fn me(session: Session) -> Json<TeamInfoResponse> {
+    let Session { game, team } = session;
+    Json(TeamInfoResponse { game, team })
 }

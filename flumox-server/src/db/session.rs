@@ -2,9 +2,13 @@ use deadpool_postgres::Client;
 use time::OffsetDateTime;
 use uuid::Uuid;
 
-use crate::{error::InternalError, session::SessionToken, types::TeamInfo};
+use crate::{
+    error::InternalError,
+    session::{Session, SessionToken},
+    types::TeamInfo,
+};
 
-const GET_TEAM_BY_KEY: &str = "SELECT game, id, name FROM team WHERE access_code=$1";
+const TEAM_BY_KEY: &str = "SELECT game, id, name FROM team WHERE access_code=$1";
 const CREATE_SESSION: &str =
     "INSERT INTO session (id, game, team, token, created) VALUES ($1, $2, $3, $4, $5)";
 
@@ -14,7 +18,7 @@ pub async fn login(
 ) -> Result<Option<(SessionToken, TeamInfo)>, InternalError> {
     let db = db.transaction().await?;
 
-    let row = db.query_opt(GET_TEAM_BY_KEY, &[&code]).await?;
+    let row = db.query_opt(TEAM_BY_KEY, &[&code]).await?;
 
     let Some(row) = row else { return Ok(None); };
 
@@ -34,4 +38,22 @@ pub async fn login(
     let info = TeamInfo { name };
 
     Ok(Some((token, info)))
+}
+
+const SESSION_BY_TOKEN: &str = "SELECT game, team FROM session WHERE token=$1";
+
+pub async fn team_by_session_token(
+    db: &mut Client,
+    token: SessionToken,
+) -> Result<Option<Session>, InternalError> {
+    let row = db.query_opt(SESSION_BY_TOKEN, &[&token.0]).await?;
+
+    if let Some(row) = row {
+        let game: Uuid = row.try_get(0)?;
+        let team: Uuid = row.try_get(1)?;
+
+        Ok(Some(Session { game, team }))
+    } else {
+        Ok(None)
+    }
 }
