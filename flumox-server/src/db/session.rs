@@ -18,7 +18,8 @@ pub async fn login(
 ) -> Result<Option<(SessionToken, TeamInfo)>, InternalError> {
     let db = db.transaction().await?;
 
-    let row = db.query_opt(TEAM_BY_KEY, &[&code]).await?;
+    let statement = db.prepare_cached(TEAM_BY_KEY).await?;
+    let row = db.query_opt(&statement, &[&code]).await?;
 
     let Some(row) = row else { return Ok(None); };
 
@@ -30,7 +31,8 @@ pub async fn login(
     let token = SessionToken::new();
     let time = OffsetDateTime::now_utc();
 
-    db.execute(CREATE_SESSION, &[&id, &game, &team, &token.0, &time])
+    let statement = db.prepare_cached(CREATE_SESSION).await?;
+    db.execute(&statement, &[&id, &game, &team, &token.0, &time])
         .await?;
 
     db.commit().await?;
@@ -46,7 +48,8 @@ pub async fn team_by_session_token(
     db: &mut Client,
     token: SessionToken,
 ) -> Result<Option<Session>, InternalError> {
-    let row = db.query_opt(SESSION_BY_TOKEN, &[&token.0]).await?;
+    let statement = db.prepare_cached(SESSION_BY_TOKEN).await?;
+    let row = db.query_opt(&statement, &[&token.0]).await?;
 
     if let Some(row) = row {
         let game: Uuid = row.try_get(0)?;

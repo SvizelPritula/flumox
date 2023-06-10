@@ -19,7 +19,8 @@ pub async fn load_state(
     game: Uuid,
     team: Uuid,
 ) -> Result<GameState, InternalError> {
-    let rows = db.query(LOAD_STATE, &[&game, &team]).await?;
+    let statement = db.prepare_cached(LOAD_STATE).await?;
+    let rows = db.query(&statement, &[&game, &team]).await?;
 
     let mut instances = IndexMap::new();
 
