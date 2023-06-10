@@ -11,19 +11,19 @@ use time_expr::EvalError;
 
 #[derive(Debug, Error)]
 pub enum InternalError {
-    #[error("failed to comunicate with database")]
+    #[error("failed to comunicate with database: {source}")]
     Database {
         #[from]
         source: tokio_postgres::Error,
     },
     #[error("failed to get client from pool")]
     Pool,
-    #[error("instance and state type does not match")]
+    #[error("instance and state type does not match: {source}")]
     BadStateType {
         #[from]
         source: StateMismatchError,
     },
-    #[error("failed to evaluate expression")]
+    #[error("failed to evaluate expression: {source}")]
     Eval {
         #[from]
         source: EvalError,

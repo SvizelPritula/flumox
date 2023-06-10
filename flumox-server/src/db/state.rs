@@ -6,19 +6,19 @@ use uuid::Uuid;
 
 use crate::error::InternalError;
 
-const LOAD_STATE: &str = concat!(
-    "SELECT widget.ident, widget.config, state.state ",
-    "FROM widget LEFT JOIN state ",
-    "ON state.game=widget.game AND state.widget=widget.id AND state.team=$2 ",
-    "WHERE widget.game=$1 ",
-    "ORDER BY widget.id"
-);
-
 pub async fn load_state(
     db: &mut Client,
     game: Uuid,
     team: Uuid,
 ) -> Result<GameState, InternalError> {
+    const LOAD_STATE: &str = concat!(
+        "SELECT widget.ident, widget.config, state.state ",
+        "FROM widget LEFT JOIN state ",
+        "ON state.game=widget.game AND state.widget=widget.id AND state.team=$2 ",
+        "WHERE widget.game=$1 ",
+        "ORDER BY widget.id"
+    );
+
     let statement = db.prepare_cached(LOAD_STATE).await?;
     let rows = db.query(&statement, &[&game, &team]).await?;
 

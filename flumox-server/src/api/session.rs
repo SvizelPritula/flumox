@@ -3,10 +3,9 @@ use std::net::SocketAddr;
 use axum::{extract::ConnectInfo, Json};
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
-use uuid::Uuid;
 
 use crate::{
-    db,
+    db::{self, team_info},
     error::InternalError,
     extract::DbConnection,
     session::{Session, SessionToken},
@@ -48,13 +47,15 @@ pub async fn login(
     }
 }
 
-#[derive(Debug, Clone, Serialize)]
-pub struct TeamInfoResponse {
-    game: Uuid,
-    team: Uuid,
-}
-
-pub async fn me(session: Session) -> Json<TeamInfoResponse> {
-    let Session { game, team } = session;
-    Json(TeamInfoResponse { game, team })
+pub async fn me(
+    Session { game, team }: Session,
+    DbConnection(mut db): DbConnection,
+) -> Result<Json<TeamInfo>, InternalError> {
+    match team_info(&mut db, game, team).await {
+        Ok(info) => Ok(Json(info)),
+        Err(err) => {
+            error!("Failed to obtain team info: {err}");
+            Err(err)
+        }
+    }
 }

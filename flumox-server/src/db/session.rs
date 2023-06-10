@@ -8,14 +8,14 @@ use crate::{
     types::TeamInfo,
 };
 
-const TEAM_BY_KEY: &str = "SELECT game, id, name FROM team WHERE access_code=$1";
-const CREATE_SESSION: &str =
-    "INSERT INTO session (id, game, team, token, created) VALUES ($1, $2, $3, $4, $5)";
-
 pub async fn login(
     db: &mut Client,
     code: &str,
 ) -> Result<Option<(SessionToken, TeamInfo)>, InternalError> {
+    const TEAM_BY_KEY: &str = "SELECT game, id, name FROM team WHERE access_code=$1";
+    const CREATE_SESSION: &str =
+        "INSERT INTO session (id, game, team, token, created) VALUES ($1, $2, $3, $4, $5)";
+
     let db = db.transaction().await?;
 
     let statement = db.prepare_cached(TEAM_BY_KEY).await?;
@@ -42,12 +42,12 @@ pub async fn login(
     Ok(Some((token, info)))
 }
 
-const SESSION_BY_TOKEN: &str = "SELECT game, team FROM session WHERE token=$1";
-
 pub async fn team_by_session_token(
     db: &mut Client,
     token: SessionToken,
 ) -> Result<Option<Session>, InternalError> {
+    const SESSION_BY_TOKEN: &str = "SELECT game, team FROM session WHERE token=$1";
+
     let statement = db.prepare_cached(SESSION_BY_TOKEN).await?;
     let row = db.query_opt(&statement, &[&token.0]).await?;
 
@@ -59,4 +59,15 @@ pub async fn team_by_session_token(
     } else {
         Ok(None)
     }
+}
+
+pub async fn team_info(db: &mut Client, game: Uuid, id: Uuid) -> Result<TeamInfo, InternalError> {
+    const TEAM_INFO: &str = "SELECT name FROM team WHERE game=$1 AND id=$2";
+
+    let statement = db.prepare_cached(TEAM_INFO).await?;
+    let row = db.query_one(&statement, &[&game, &id]).await?;
+
+    let name: String = row.try_get(0)?;
+
+    Ok(TeamInfo { name })
 }
