@@ -14,7 +14,7 @@ use tracing::{error, info, warn};
 use crate::{
     db::team_by_session_token,
     error::{ErrorResponse, InternalError},
-    session::{Session, SessionToken},
+    session::{Session, SessionToken, X_AUTH_TOKEN},
 };
 
 use std::{iter, net::SocketAddr};
@@ -42,8 +42,6 @@ where
 }
 
 struct XAuthToken(SessionToken);
-
-static X_AUTH_TOKEN: HeaderName = HeaderName::from_static("x-auth-token");
 
 impl Header for XAuthToken {
     fn name() -> &'static HeaderName {

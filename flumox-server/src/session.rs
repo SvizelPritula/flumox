@@ -5,11 +5,14 @@ use base64::{
     Engine,
 };
 use getrandom::getrandom;
+use headers::HeaderName;
 use serde::{Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;
 
 pub const SESSION_BYTES: usize = 16;
+
+pub static X_AUTH_TOKEN: HeaderName = HeaderName::from_static("x-auth-token");
 
 #[derive(Debug, Default, Clone, Copy, Hash, PartialEq, Eq)]
 pub struct SessionToken(pub [u8; SESSION_BYTES]);
