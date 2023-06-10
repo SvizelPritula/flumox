@@ -1,6 +1,6 @@
 use async_trait::async_trait;
 use axum::{
-    extract::{rejection::TypedHeaderRejectionReason, FromRef, FromRequestParts},
+    extract::{rejection::TypedHeaderRejectionReason, ConnectInfo, FromRef, FromRequestParts},
     http::{request::Parts, HeaderName, StatusCode},
     response::{IntoResponse, Response},
     Json, RequestPartsExt, TypedHeader,
@@ -9,6 +9,7 @@ use deadpool_postgres::{Object, Pool};
 use headers::{Header, HeaderValue};
 use serde::Serialize;
 use thiserror::Error;
+use tracing::{error, info, warn};
 
 use crate::{
     db::team_by_session_token,
@@ -16,7 +17,7 @@ use crate::{
     session::{Session, SessionToken},
 };
 
-use std::iter;
+use std::{iter, net::SocketAddr};
 
 pub struct DbConnection(pub Object);
 
@@ -31,7 +32,11 @@ where
     async fn from_request_parts(_parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
         match Pool::from_ref(state).get().await {
             Ok(conn) => Ok(DbConnection(conn)),
-            Err(error) => Err(error.into()),
+            Err(err) => {
+                let err = err.into();
+                error!("Failed to get client from pool: {err}");
+                Err(err)
+            }
         }
     }
 }
@@ -96,10 +101,23 @@ where
 
                 match get_session_from_pool(&pool, token).await {
                     Ok(Some(session)) => Ok(session),
-                    Ok(None) => Err(SessionExtractError::SessionError(
-                        SessionError::InvalidToken,
-                    )),
-                    Err(error) => Err(SessionExtractError::InternalError(error)),
+                    Ok(None) => {
+                        if let Ok(ConnectInfo(addr)) = parts.extract().await {
+                            let addr: SocketAddr = addr;
+                            info!(%addr, "Invalid session token supplied");
+                        } else {
+                            warn!("Failed to get client's IP");
+                            info!("Invalid session token supplied");
+                        }
+
+                        Err(SessionExtractError::SessionError(
+                            SessionError::InvalidToken,
+                        ))
+                    }
+                    Err(err) => {
+                        error!("Failed to check session: {err}");
+                        Err(SessionExtractError::InternalError(err))
+                    }
                 }
             }
         }

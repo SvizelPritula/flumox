@@ -1,5 +1,8 @@
-use axum::Json;
+use std::net::SocketAddr;
+
+use axum::{extract::ConnectInfo, Json};
 use serde::{Deserialize, Serialize};
+use tracing::{error, info};
 use uuid::Uuid;
 
 use crate::{
@@ -24,14 +27,24 @@ pub struct LoginRequest {
 
 pub async fn login(
     DbConnection(mut db): DbConnection,
+    ConnectInfo(addr): ConnectInfo<SocketAddr>,
     Json(request): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, InternalError> {
     let LoginRequest { access_code: key } = request;
 
     match db::login(&mut db, &key).await {
-        Ok(Some((token, team))) => Ok(Json(LoginResponse::Success { token, team })),
-        Ok(None) => Ok(Json(LoginResponse::IncorrectKey)),
-        Err(error) => Err(error),
+        Ok(Some((token, team))) => {
+            info!(%addr, team.name, "Login succeeded");
+            Ok(Json(LoginResponse::Success { token, team }))
+        }
+        Ok(None) => {
+            info!(%addr, "Login failed, incorrect access key supplied");
+            Ok(Json(LoginResponse::IncorrectKey))
+        }
+        Err(err) => {
+            error!("Failed to verify access code: {err}");
+            Err(err)
+        }
     }
 }
 
