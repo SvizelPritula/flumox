@@ -15,7 +15,7 @@ use crate::{
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "kebab-case", tag = "result")]
 pub enum LoginResponse {
-    IncorrectKey,
+    IncorrectCode,
     Success { token: SessionToken, team: TeamInfo },
 }
 
@@ -38,7 +38,7 @@ pub async fn login(
         }
         Ok(None) => {
             info!(%addr, "Login failed, incorrect access key supplied");
-            Ok(Json(LoginResponse::IncorrectKey))
+            Ok(Json(LoginResponse::IncorrectCode))
         }
         Err(err) => {
             error!("Failed to verify access code: {err}");
