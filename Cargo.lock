@@ -342,6 +342,7 @@ dependencies = [
  "flumox",
  "getrandom",
  "headers",
+ "http",
  "indexmap",
  "serde",
  "serde_json",
