@@ -13,7 +13,7 @@ mod tokens;
 
 type Iter<'a> = Peekable<Tokens<'a>>;
 
-pub fn parse<'a>(string: &'a str) -> Result<Expr<'a>, EvalError> {
+pub fn parse(string: &str) -> Result<Expr, EvalError> {
     let mut tokens = Tokens::new(string).peekable();
 
     let expr = parse_add(&mut tokens)?;
@@ -135,14 +135,14 @@ fn parse_path<'a>(tokens: &mut Iter<'a>, first: &'a str) -> Result<Vec<&'a str>,
     Ok(path)
 }
 
-fn unexpected<'a>(token: Option<(Token<'a>, usize)>) -> EvalError {
+fn unexpected(token: Option<(Token, usize)>) -> EvalError {
     EvalError::UnexpectedToken {
         token: TokenType::new(token.map(|(t, _)| t)),
         pos: token.map(|(_, p)| p),
     }
 }
 
-fn expect<'a>(tokens: &mut Iter<'a>, expected: TokenType) -> Result<(), EvalError> {
+fn expect(tokens: &mut Iter, expected: TokenType) -> Result<(), EvalError> {
     let token = tokens.next().transpose()?;
     let actual = TokenType::new(token.map(|(t, _)| t));
 
@@ -156,7 +156,7 @@ fn expect<'a>(tokens: &mut Iter<'a>, expected: TokenType) -> Result<(), EvalErro
     }
 }
 
-fn expect_number<'a, I>(tokens: &mut Iter<'a>) -> Result<I, EvalError>
+fn expect_number<I>(tokens: &mut Iter) -> Result<I, EvalError>
 where
     I: TryFrom<u64>,
 {

@@ -16,7 +16,7 @@ impl GameState {
         let mut result = Vec::new();
 
         for (ident, widget) in self.instances.iter() {
-            let env = Environment::new(&self, &mut cache, ident);
+            let env = Environment::new(self, &mut cache, ident);
             let ctx = ViewContext::new(env, &mut tracker);
 
             if let Some(view) = widget.view(ctx)? {

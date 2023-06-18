@@ -61,7 +61,7 @@ impl Instance {
 
     pub fn view(&self, ctx: ViewContext) -> ViewResult<View> {
         let view = match self {
-            Instance::Prompt(c, s) => c.view(s, ctx)?.map(|v| View::Prompt(v)),
+            Instance::Prompt(c, s) => c.view(s, ctx)?.map(View::Prompt),
         };
 
         Ok(view)

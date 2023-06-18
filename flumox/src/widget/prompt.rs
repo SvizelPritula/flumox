@@ -50,9 +50,9 @@ impl Config {
     }
 
     pub fn resolve(&self, state: &State, path: &[&str], mut env: Environment) -> EvalResult {
-        match path {
-            &["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
-            &["visible"] => env.eval(&self.visible),
+        match *path {
+            ["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
+            ["visible"] => env.eval(&self.visible),
             _ => Err(env.unknown_path(path)),
         }
     }

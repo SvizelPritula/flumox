@@ -7,7 +7,7 @@ use crate::{
 
 use super::Iter;
 
-pub fn parse_duration<'a>(tokens: &mut Iter<'a>) -> Result<Duration, EvalError> {
+pub fn parse_duration(tokens: &mut Iter) -> Result<Duration, EvalError> {
     let mut total = Duration::ZERO;
     let mut parsed_some = false;
 
@@ -59,11 +59,7 @@ fn get_unit(name: &str) -> Option<Duration> {
     }
 }
 
-pub fn parse_date<'a>(
-    tokens: &mut Iter<'a>,
-    first: u64,
-    pos: usize,
-) -> Result<OffsetDateTime, EvalError> {
+pub fn parse_date(tokens: &mut Iter, first: u64, pos: usize) -> Result<OffsetDateTime, EvalError> {
     let date = {
         let year = first
             .try_into()
@@ -111,7 +107,7 @@ pub fn parse_date<'a>(
     Ok(datetime)
 }
 
-fn parse_optional_time_component<'a, I>(tokens: &mut Iter<'a>, default: I) -> Result<I, EvalError>
+fn parse_optional_time_component<I>(tokens: &mut Iter, default: I) -> Result<I, EvalError>
 where
     I: TryFrom<u64>,
 {

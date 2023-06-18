@@ -87,10 +87,10 @@ where
 
         match parts.extract().await {
             Err(error) => match error.reason() {
-                TypedHeaderRejectionReason::Missing => {
-                    Err(SessionExtractError::SessionError(SessionError::NoToken))
-                }
-                TypedHeaderRejectionReason::Error(_) | _ => Err(SessionExtractError::SessionError(
+                TypedHeaderRejectionReason::Missing => Err(SessionExtractError::SessionError(
+                    SessionError::NoAuthHeader,
+                )),
+                _ => Err(SessionExtractError::SessionError(
                     SessionError::MalformedToken,
                 )),
             },
@@ -126,7 +126,7 @@ where
 #[serde(rename_all = "kebab-case")]
 pub enum SessionError {
     #[error("no session token provided")]
-    NoToken,
+    NoAuthHeader,
     #[error("token format invalid")]
     MalformedToken,
     #[error("no session token provided")]
