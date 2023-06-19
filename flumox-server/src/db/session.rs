@@ -12,7 +12,11 @@ pub async fn login(
     db: &mut Client,
     code: &str,
 ) -> Result<Option<(SessionToken, TeamInfo)>, InternalError> {
-    const TEAM_BY_KEY: &str = "SELECT game, id, name FROM team WHERE access_code=$1";
+    const TEAM_BY_KEY: &str = concat!(
+        "SELECT team.game, team.id, team.name, game.name ",
+        "FROM team INNER JOIN game ON game.id = team.game ",
+        "WHERE team.access_code=$1"
+    );
     const CREATE_SESSION: &str =
         "INSERT INTO session (id, game, team, token, created) VALUES ($1, $2, $3, $4, $5)";
 
@@ -26,6 +30,7 @@ pub async fn login(
     let game: Uuid = row.try_get(0)?;
     let team: Uuid = row.try_get(1)?;
     let name: String = row.try_get(2)?;
+    let game_name: String = row.try_get(3)?;
 
     let id = Uuid::new_v4();
     let token = SessionToken::new();
@@ -37,7 +42,7 @@ pub async fn login(
 
     db.commit().await?;
 
-    let info = TeamInfo { name };
+    let info = TeamInfo { name, game_name };
 
     Ok(Some((token, info)))
 }
@@ -62,12 +67,17 @@ pub async fn team_by_session_token(
 }
 
 pub async fn team_info(db: &mut Client, game: Uuid, id: Uuid) -> Result<TeamInfo, InternalError> {
-    const TEAM_INFO: &str = "SELECT name FROM team WHERE game=$1 AND id=$2";
+    const TEAM_INFO: &str = concat!(
+        "SELECT team.name, game.name ",
+        "FROM team INNER JOIN game ON game.id = team.game ",
+        "WHERE team.game=$1 AND team.id=$2"
+    );
 
     let statement = db.prepare_cached(TEAM_INFO).await?;
     let row = db.query_one(&statement, &[&game, &id]).await?;
 
     let name: String = row.try_get(0)?;
+    let game_name: String = row.try_get(1)?;
 
-    Ok(TeamInfo { name })
+    Ok(TeamInfo { name, game_name })
 }

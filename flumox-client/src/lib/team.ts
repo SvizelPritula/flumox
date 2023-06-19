@@ -1,7 +1,8 @@
 export type SessionToken = string;
 
 export interface TeamInfo {
-    name: string
+    name: string,
+    gameName: string,
 };
 
 export interface Session {

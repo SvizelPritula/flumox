@@ -6,7 +6,7 @@
 </script>
 
 <header>
-  {team.name}
+  {team.gameName}
 </header>
 
 <main>
