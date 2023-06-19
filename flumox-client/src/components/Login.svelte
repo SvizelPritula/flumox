@@ -3,7 +3,7 @@
   import type { Toaster } from "../lib/toast";
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
-  import form from "../styles/forms.module.css";
+  import { button, input, label } from "../styles/forms.module.css";
 
   let code = "";
   let inFlight = false;
@@ -36,20 +36,18 @@
   <form on:submit|preventDefault={submit}>
     <h1>Login</h1>
 
-    <label class={form.label}>
+    <label class={label}>
       <div>Access code</div>
       <input
         bind:value={code}
         type="password"
         autocomplete="current-password"
         disabled={inFlight}
-        class={form.input}
+        class={input}
       />
     </label>
 
-    <button type="submit" disabled={inFlight} class={form.button}>
-      Submit
-    </button>
+    <button type="submit" disabled={inFlight} class={button}>Submit</button>
   </form>
 </main>
 

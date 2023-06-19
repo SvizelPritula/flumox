@@ -10,7 +10,9 @@
 </header>
 
 <main>
-  You are <b>{team.name}</b>.
+  <p>
+    You are <b>{team.name}</b>.
+  </p>
   <button on:click={() => ($session = null)}>Log out</button>
 </main>
 
