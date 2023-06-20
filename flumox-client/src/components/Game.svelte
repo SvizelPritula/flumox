@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { TeamInfo } from "../lib/team";
   import { session } from "../stores";
+  import Toasts from "./Toasts.svelte";
 
   export let team: TeamInfo;
 </script>
@@ -8,6 +9,8 @@
 <header>
   {team.gameName}
 </header>
+
+<Toasts />
 
 <main>
   <p>
@@ -30,6 +33,6 @@
   }
 
   main {
-    padding: 1rem 2rem;
+    padding: 0 2rem;
   }
 </style>

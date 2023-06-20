@@ -1,14 +1,12 @@
 <script lang="ts">
   import { login } from "../lib/api/session";
-  import type { Toaster } from "../lib/toast";
+  import { toast } from "../lib/toast";
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
   import { button, input, label } from "../styles/forms.module.css";
 
   let code = "";
   let inFlight = false;
-
-  let toast: Toaster;
 
   async function submit() {
     inFlight = true;
@@ -17,6 +15,7 @@
       let result = await login(code);
 
       if (result.result == "success") {
+        toast(`Logged in as ${result.team.name}`, "success");
         $session = { team: result.team, token: result.token };
       } else {
         toast("Incorrect access code", "danger");
@@ -31,7 +30,7 @@
 </script>
 
 <main>
-  <Toasts bind:toast />
+  <Toasts />
 
   <form on:submit|preventDefault={submit}>
     <h1>Login</h1>

@@ -3,11 +3,14 @@ import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { minify } from 'html-minifier-terser';
 
 export default defineConfig((mode) => ({
-  plugins: [svelte({
-    compilerOptions: mode.command === "build" ? {
-      cssHash: (({ hash, css }) => `_${hash(css)}`)
-    } : {}
-  }), minifyHtml()],
+  plugins: [
+    svelte({
+      compilerOptions: mode.command === "build" ? {
+        cssHash: (({ hash, css }) => `_${hash(css)}`)
+      } : {}
+    }),
+    minifyHtml()
+  ],
   server: {
     proxy: {
       "/api": "http://localhost:3000/"

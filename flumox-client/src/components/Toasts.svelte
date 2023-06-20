@@ -1,55 +1,31 @@
-<script lang="ts" context="module">
-  let nextId: number = 0;
-</script>
-
 <script lang="ts">
-  import {
-    TOAST_EXPIRATION_TIME,
-    type Toast,
-    type ToastType,
-  } from "../lib/toast";
+  import { dismiss, type Toast } from "../lib/toast";
+  import { toasts } from "../stores";
 
   export let permanent: Toast[] = [];
 
-  let transient: [Toast, number][] = [];
-
-  export function toast(text: string, type: ToastType) {
-    let toast = { text, type, key: `\0${nextId++}` };
-
-    let timeout = setTimeout(() => {
-      remove(toast.key);
-    }, TOAST_EXPIRATION_TIME);
-
-    transient = [...transient, [toast, timeout]];
-  }
-
-  function remove(key: string) {
-    transient = transient.filter(([t, _]) => t.key != key);
-  }
-
-  function dismiss(key: string) {
-    for (let [toast, timeout] of transient) {
-      if (toast.key == key) {
-        clearTimeout(timeout);
-      }
-    }
-
-    remove(key);
-  }
-
-  $: toasts = [...permanent, ...transient.map(([t]) => t)];
+  $: all = <[Toast, boolean][]>[
+    ...permanent.map((t) => [t, false]),
+    ...$toasts.map((t) => [t, true]),
+  ];
 </script>
 
 <div class="toasts">
-  {#each toasts as { text, type, key } (key)}
-    <div class="toast {type}">
+  {#each all as [{ text, type, key }, dismissable] (key)}
+    <div class="toast {type}" role="alert">
       <div class="text">{text}</div>
-      <button class="dismiss" aria-label="close" on:click={() => dismiss(key)}>
-        <svg class="icon" viewBox="0 0 6 6">
-          <line x1="1" y1="1" x2="5" y2="5" stroke="currentColor" />
-          <line x1="1" y1="5" x2="5" y2="1" stroke="currentColor" />
-        </svg>
-      </button>
+      {#if dismissable}
+        <button
+          class="dismiss"
+          aria-label="close"
+          on:click={() => dismiss(key)}
+        >
+          <svg class="icon" viewBox="0 0 6 6">
+            <line x1="1" y1="1" x2="5" y2="5" stroke="currentColor" />
+            <line x1="1" y1="5" x2="5" y2="1" stroke="currentColor" />
+          </svg>
+        </button>
+      {/if}
     </div>
   {/each}
 </div>
@@ -62,7 +38,7 @@
 
   .toasts {
     position: sticky;
-    min-height: 1.5rem;
+    min-height: 2rem;
     top: 0;
   }
 
