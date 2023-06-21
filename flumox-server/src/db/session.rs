@@ -5,7 +5,7 @@ use uuid::Uuid;
 use crate::{
     error::InternalError,
     session::{Session, SessionToken},
-    types::TeamInfo,
+    types::{GameInfo, TeamInfo},
 };
 
 pub async fn login(
@@ -42,7 +42,10 @@ pub async fn login(
 
     db.commit().await?;
 
-    let info = TeamInfo { name, game_name };
+    let info = TeamInfo {
+        name,
+        game: GameInfo { name: game_name },
+    };
 
     Ok(Some((token, info)))
 }
@@ -79,5 +82,8 @@ pub async fn team_info(db: &mut Client, game: Uuid, id: Uuid) -> Result<TeamInfo
     let name: String = row.try_get(0)?;
     let game_name: String = row.try_get(1)?;
 
-    Ok(TeamInfo { name, game_name })
+    Ok(TeamInfo {
+        name,
+        game: GameInfo { name: game_name },
+    })
 }

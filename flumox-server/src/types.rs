@@ -1,8 +1,12 @@
 use serde::Serialize;
 
 #[derive(Debug, Clone, Serialize)]
-#[serde(rename_all = "camelCase")]
+pub struct GameInfo {
+    pub name: String,
+}
+
+#[derive(Debug, Clone, Serialize)]
 pub struct TeamInfo {
     pub name: String,
-    pub game_name: String,
+    pub game: GameInfo,
 }
