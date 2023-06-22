@@ -1,5 +1,4 @@
 export interface PromptView {
-    type: "prompt",
     name: string,
     details: string[],
     prompt: string,
@@ -7,5 +6,9 @@ export interface PromptView {
     disabled: boolean,
 }
 
-export type View = PromptView;
+export interface Metadata {
+    id: string
+}
+
+export type View = { type: "prompt", view: PromptView } & Metadata;
 export type Views = View[];

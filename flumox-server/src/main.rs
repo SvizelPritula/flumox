@@ -31,6 +31,7 @@ mod error;
 mod extract;
 mod session;
 mod types;
+mod view;
 
 async fn serve(db: Pool) -> Result<()> {
     let api = Router::new()

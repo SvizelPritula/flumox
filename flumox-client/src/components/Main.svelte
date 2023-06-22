@@ -4,6 +4,7 @@
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
   import type { Views } from "../lib/view";
+  import Game from "./game/Game.svelte";
 
   export let team: TeamInfo;
   let view: Promise<Views> = new Promise(() => {});
@@ -18,20 +19,16 @@
 </script>
 
 <header>
-  {team.game.name}
+  {team.game.name} <button on:click={() => ($session = null)}>Log out</button>
 </header>
 
 <Toasts />
 
 <main>
-  <p>
-    You are <b>{team.name}</b>.
-  </p>
-  <button on:click={() => ($session = null)}>Log out</button>
   {#await view}
     <p>Loading...</p>
-  {:then view}
-    <pre>{JSON.stringify(view, null, 4)}</pre>
+  {:then views}
+    <Game {views} />
   {:catch}
     <p>Failed to load</p>
   {/await}

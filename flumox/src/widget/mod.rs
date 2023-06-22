@@ -28,7 +28,7 @@ pub enum Instance {
 }
 
 #[derive(Debug, Clone, Serialize, Fingerprint)]
-#[serde(rename_all = "kebab-case", tag = "type")]
+#[serde(rename_all = "kebab-case", tag = "type", content = "view")]
 pub enum View {
     Prompt(prompt::View),
 }
