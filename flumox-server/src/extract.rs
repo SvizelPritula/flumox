@@ -48,12 +48,12 @@ impl<S> FromRequestParts<S> for Credentials {
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         if let Some(header) = parts.headers.get(&X_AUTH_TOKEN) {
-            let header = header
-                .to_str()
-                .map_err(|_| SessionTokenExtractError::MalformedToken)?;
             let token = header
+                .to_str()
+                .map_err(|_| SessionTokenExtractError::MalformedToken)?
                 .parse()
                 .map_err(|_| SessionTokenExtractError::MalformedToken)?;
+
             Ok(Credentials(token))
         } else {
             Err(SessionTokenExtractError::NoAuthHeader)

@@ -9,7 +9,6 @@ pub async fn view(
     DbConnection(mut db): DbConnection,
 ) -> Result<Json<Vec<View>>, InternalError> {
     let time = OffsetDateTime::now_utc();
-
     let game = load_state(&mut db, game, team).await?;
 
     let result = game.view(time)?;

@@ -8,7 +8,9 @@ anyhow = "1.0.71"
 async-trait = "0.1.68"
 axum = { version = "0.6.18", features = ["headers"] }
 base64 = "0.21.2"
+blake2 = "0.10.6"
 deadpool-postgres = "0.10.5"
+fingerprint-struct = "0.1.0"
 flumox = { path = "../flumox" }
 getrandom = "0.2.10"
 http = "0.2.9"

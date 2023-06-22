@@ -1,3 +1,4 @@
+use fingerprint_struct::Fingerprint;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -21,13 +22,12 @@ pub enum State {
     Prompt(prompt::State),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(rename_all = "kebab-case")]
+#[derive(Debug, Clone)]
 pub enum Instance {
     Prompt(prompt::Config, prompt::State),
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Fingerprint)]
 #[serde(rename_all = "kebab-case", tag = "type")]
 pub enum View {
     Prompt(prompt::View),
