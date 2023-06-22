@@ -347,7 +347,6 @@ dependencies = [
  "deadpool-postgres",
  "flumox",
  "getrandom",
- "headers",
  "http",
  "indexmap",
  "serde",

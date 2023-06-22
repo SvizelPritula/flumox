@@ -5,7 +5,7 @@ use base64::{
     Engine,
 };
 use getrandom::getrandom;
-use headers::HeaderName;
+use http::HeaderName;
 use serde::{Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;

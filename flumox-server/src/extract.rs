@@ -1,12 +1,11 @@
 use async_trait::async_trait;
 use axum::{
-    extract::{rejection::TypedHeaderRejectionReason, ConnectInfo, FromRef, FromRequestParts},
-    http::{request::Parts, HeaderName, StatusCode},
+    extract::{ConnectInfo, FromRef, FromRequestParts},
+    http::{request::Parts, StatusCode},
     response::{IntoResponse, Response},
-    Json, RequestPartsExt, TypedHeader,
+    Json, RequestPartsExt,
 };
 use deadpool_postgres::{Object, Pool};
-use headers::{Header, HeaderValue};
 use serde::Serialize;
 use thiserror::Error;
 use tracing::{error, info, warn};
@@ -17,7 +16,7 @@ use crate::{
     session::{Session, SessionToken, X_AUTH_TOKEN},
 };
 
-use std::{iter, net::SocketAddr};
+use std::net::SocketAddr;
 
 pub struct DbConnection(pub Object);
 
@@ -41,30 +40,24 @@ where
     }
 }
 
-struct XAuthToken(SessionToken);
+struct Credentials(SessionToken);
 
-impl Header for XAuthToken {
-    fn name() -> &'static HeaderName {
-        &X_AUTH_TOKEN
-    }
+#[async_trait]
+impl<S> FromRequestParts<S> for Credentials {
+    type Rejection = SessionTokenExtractError;
 
-    fn decode<'i, I>(values: &mut I) -> Result<Self, headers::Error>
-    where
-        I: Iterator<Item = &'i HeaderValue>,
-    {
-        let value = values.next().ok_or_else(headers::Error::invalid)?;
-        let value = value.to_str().map_err(|_| headers::Error::invalid())?;
-        let token = value.parse().map_err(|_| headers::Error::invalid())?;
-        Ok(XAuthToken(token))
-    }
-
-    fn encode<E>(&self, values: &mut E)
-    where
-        E: Extend<HeaderValue>,
-    {
-        let value = HeaderValue::from_str(&self.0.to_string()).expect("base64 is always valid");
-
-        values.extend(iter::once(value));
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        if let Some(header) = parts.headers.get(&X_AUTH_TOKEN) {
+            let header = header
+                .to_str()
+                .map_err(|_| SessionTokenExtractError::MalformedToken)?;
+            let token = header
+                .parse()
+                .map_err(|_| SessionTokenExtractError::MalformedToken)?;
+            Ok(Credentials(token))
+        } else {
+            Err(SessionTokenExtractError::NoAuthHeader)
+        }
     }
 }
 
@@ -86,15 +79,11 @@ where
         }
 
         match parts.extract().await {
-            Err(error) => match error.reason() {
-                TypedHeaderRejectionReason::Missing => Err(SessionExtractError::SessionError(
-                    SessionError::NoAuthHeader,
-                )),
-                _ => Err(SessionExtractError::SessionError(
-                    SessionError::MalformedToken,
-                )),
-            },
-            Ok(TypedHeader(XAuthToken(token))) => {
+            Err(SessionTokenExtractError::NoAuthHeader) => Err(SessionError::NoAuthHeader.into()),
+            Err(SessionTokenExtractError::MalformedToken) => {
+                Err(SessionError::MalformedToken.into())
+            }
+            Ok(Credentials(token)) => {
                 let pool = Pool::from_ref(state);
 
                 match get_session_from_pool(&pool, token).await {
@@ -136,9 +125,18 @@ pub enum SessionError {
 #[derive(Debug, Error)]
 pub enum SessionExtractError {
     #[error(transparent)]
-    InternalError(InternalError),
+    InternalError(#[from] InternalError),
     #[error(transparent)]
-    SessionError(SessionError),
+    SessionError(#[from] SessionError),
+}
+
+#[derive(Debug, Clone, Error, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SessionTokenExtractError {
+    #[error("no session token provided")]
+    NoAuthHeader,
+    #[error("token format invalid")]
+    MalformedToken,
 }
 
 impl IntoResponse for SessionError {
@@ -153,5 +151,11 @@ impl IntoResponse for SessionExtractError {
             SessionExtractError::InternalError(e) => e.into_response(),
             SessionExtractError::SessionError(e) => e.into_response(),
         }
+    }
+}
+
+impl IntoResponse for SessionTokenExtractError {
+    fn into_response(self) -> Response {
+        (StatusCode::UNAUTHORIZED, Json(ErrorResponse::new(self))).into_response()
     }
 }

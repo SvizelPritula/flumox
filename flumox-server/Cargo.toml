@@ -11,7 +11,6 @@ base64 = "0.21.2"
 deadpool-postgres = "0.10.5"
 flumox = { path = "../flumox" }
 getrandom = "0.2.10"
-headers = "0.3.8"
 http = "0.2.9"
 indexmap = "1.9.3"
 serde = { version = "1.0.164", features = ["derive"] }
