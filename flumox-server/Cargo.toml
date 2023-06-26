@@ -14,9 +14,9 @@ fingerprint-struct = "0.1.0"
 flumox = { path = "../flumox" }
 getrandom = "0.2.10"
 http = "0.2.9"
-indexmap = "1.9.3"
+indexmap = "2.0.0"
 serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.97"
+serde_json = "1.0.99"
 thiserror = "1.0.40"
 time = { version = "0.3.22", features = ["serde", "macros"] }
 time-expr = { path = "../time-expr" }
