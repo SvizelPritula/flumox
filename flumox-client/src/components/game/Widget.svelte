@@ -12,3 +12,12 @@
     Unknown view
   {/if}
 </div>
+
+<style>
+  div {
+    background-color: hsl(0, 0%, 10%);
+    border-radius: 1rem;
+    padding: 2rem;
+    margin: 1rem 0;
+  }
+</style>

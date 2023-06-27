@@ -12,7 +12,7 @@ VALUES
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'first', '{
         "type": "prompt",
         "name": "First",
-        "details": [],
+        "details": ["This is the first cipher.", "Please solve it and submit the solution."],
         "prompt": "Answer:",
         "submit_button": "Submit",
         "solutions": [],
@@ -21,7 +21,7 @@ VALUES
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'second', '{
         "type": "prompt",
         "name": "Second",
-        "details": [],
+        "details": ["Good luck with the second cipher!"],
         "prompt": "Answer:",
         "submit_button": "Submit",
         "solutions": [],

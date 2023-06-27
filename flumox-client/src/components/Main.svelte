@@ -1,38 +1,32 @@
 <script lang="ts">
-  import { onMount } from "svelte";
   import type { TeamInfo } from "../lib/team";
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
-  import type { Views } from "../lib/view";
   import Game from "./game/Game.svelte";
+  import { view } from "../lib/api/game";
 
   export let team: TeamInfo;
-  let view: Promise<Views> = new Promise(() => {});
 
-  onMount(() => {
-    view = fetch("/api/view", {
-      headers: {
-        "x-auth-token": $session.token,
-      },
-    }).then((result) => result.json());
-  });
+  $: state = view($session.token);
 </script>
 
-<header>
-  {team.game.name} <button on:click={() => ($session = null)}>Log out</button>
-</header>
+<div>
+  <header>
+    {team.game.name} <button on:click={() => ($session = null)}>Log out</button>
+  </header>
 
-<Toasts />
+  <Toasts />
 
-<main>
-  {#await view}
-    <p>Loading...</p>
-  {:then views}
-    <Game {views} />
-  {:catch}
-    <p>Failed to load</p>
-  {/await}
-</main>
+  <main>
+    {#await state}
+      <p>Loading...</p>
+    {:then views}
+      <Game {views} />
+    {:catch}
+      <p>Failed to load</p>
+    {/await}
+  </main>
+</div>
 
 <style>
   header,
