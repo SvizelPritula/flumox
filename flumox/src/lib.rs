@@ -1,12 +1,16 @@
-mod view_context;
+mod action;
 mod error;
 mod expr;
 mod game;
 mod solution;
+mod toast;
+mod view_context;
 mod widget;
 
-pub use error::{EvalResult, StateMismatchError};
+pub use action::{Action, ActionContext, ActionEffect};
+pub use error::{ActionError, EvalResult, StateMismatchError};
 pub use expr::{Cache, Environment};
 pub use game::GameState;
-pub use widget::{Config, Instance, State, View};
+pub use toast::{Toast, ToastType};
 pub use view_context::{TimeTracker, ViewContext};
+pub use widget::{Config, Instance, State, View};

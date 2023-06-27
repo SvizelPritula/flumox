@@ -39,6 +39,7 @@ async fn serve(db: Pool, port: u16, serve: Option<PathBuf>) -> Result<()> {
         .route("/login", post(api::login))
         .route("/me", get(api::me))
         .route("/view", get(api::view))
+        .route("/action", post(api::submit))
         .fallback(not_found)
         .layer(SetResponseHeaderLayer::if_not_present(
             CACHE_CONTROL,

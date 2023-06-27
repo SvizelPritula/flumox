@@ -1,18 +1,19 @@
 use std::collections::HashMap;
 
-use deadpool_postgres::Client;
-use flumox::{Config, GameState};
+use deadpool_postgres::Transaction;
+use flumox::{Config, GameState, State, StateMismatchError};
 use indexmap::IndexMap;
-use tokio_postgres::types::Json;
+use thiserror::Error;
+use tokio_postgres::{types::Json, Error};
 use uuid::Uuid;
 
 use crate::{error::InternalError, types::InstanceMetadata};
 
 pub async fn load_state(
-    db: &mut Client,
+    db: &mut Transaction<'_>,
     game: Uuid,
     team: Uuid,
-) -> Result<(GameState, HashMap<String, InstanceMetadata>), InternalError> {
+) -> Result<(GameState, HashMap<String, InstanceMetadata>), LoadStateError> {
     const LOAD_STATE: &str = concat!(
         "SELECT widget.id, widget.ident, widget.config, state.state ",
         "FROM widget LEFT JOIN state ",
@@ -43,4 +44,42 @@ pub async fn load_state(
     }
 
     Ok((GameState { instances }, metadata))
+}
+
+pub async fn set_state(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+    team: Uuid,
+    widget: Uuid,
+    state: State,
+) -> Result<(), Error> {
+    const SET_STATE: &str = concat!(
+        "INSERT INTO state (game, team, widget, state) ",
+        "VALUES ($1, $2, $3, $4) ",
+        "ON CONFLICT (game, team, widget) ",
+        "DO UPDATE SET state=excluded.state"
+    );
+
+    let statement = db.prepare_cached(SET_STATE).await?;
+    db.execute(&statement, &[&game, &team, &widget, &Json(state)])
+        .await?;
+
+    Ok(())
+}
+
+#[derive(Debug, Error)]
+pub enum LoadStateError {
+    #[error("failed to comunicate with database: {0}")]
+    Database(#[from] Error),
+    #[error(transparent)]
+    StateMismatch(#[from] StateMismatchError),
+}
+
+impl From<LoadStateError> for InternalError {
+    fn from(value: LoadStateError) -> Self {
+        match value {
+            LoadStateError::Database(e) => e.into(),
+            LoadStateError::StateMismatch(e) => e.into(),
+        }
+    }
 }

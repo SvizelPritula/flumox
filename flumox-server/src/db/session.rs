@@ -1,17 +1,14 @@
 use deadpool_postgres::Client;
 use time::OffsetDateTime;
+use tokio_postgres::Error;
 use uuid::Uuid;
 
 use crate::{
-    error::InternalError,
     session::{Session, SessionToken},
     types::{GameInfo, TeamInfo},
 };
 
-pub async fn login(
-    db: &mut Client,
-    code: &str,
-) -> Result<Option<(SessionToken, TeamInfo)>, InternalError> {
+pub async fn login(db: &mut Client, code: &str) -> Result<Option<(SessionToken, TeamInfo)>, Error> {
     const TEAM_BY_KEY: &str = concat!(
         "SELECT team.game, team.id, team.name, game.name ",
         "FROM team INNER JOIN game ON game.id = team.game ",
@@ -53,7 +50,7 @@ pub async fn login(
 pub async fn team_by_session_token(
     db: &mut Client,
     token: SessionToken,
-) -> Result<Option<Session>, InternalError> {
+) -> Result<Option<Session>, Error> {
     const SESSION_BY_TOKEN: &str = "SELECT game, team FROM session WHERE token=$1";
 
     let statement = db.prepare_cached(SESSION_BY_TOKEN).await?;
@@ -69,7 +66,7 @@ pub async fn team_by_session_token(
     }
 }
 
-pub async fn team_info(db: &mut Client, game: Uuid, id: Uuid) -> Result<TeamInfo, InternalError> {
+pub async fn team_info(db: &mut Client, game: Uuid, id: Uuid) -> Result<TeamInfo, Error> {
     const TEAM_INFO: &str = concat!(
         "SELECT team.name, game.name ",
         "FROM team INNER JOIN game ON game.id = team.game ",

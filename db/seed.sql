@@ -15,7 +15,10 @@ VALUES
         "details": ["This is the first cipher.", "Please solve it and submit the solution."],
         "prompt": "Answer:",
         "submit_button": "Submit",
-        "solutions": [],
+        "solutions": [
+            {"type": "alphanumeric", "solution": "first"},
+            {"type": "number", "solution": 1}
+        ],
         "visible": "2022-01-01 12:00 +2"
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'second', '{
@@ -24,7 +27,10 @@ VALUES
         "details": ["Good luck with the second cipher!"],
         "prompt": "Answer:",
         "submit_button": "Submit",
-        "solutions": [],
+        "solutions": [
+            {"type": "alphanumeric", "solution": "second"},
+            {"type": "alphanumeric", "solution": "two"}
+        ],
         "visible": "first.solved"
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000002', 'third', '{
@@ -33,7 +39,9 @@ VALUES
         "details": [],
         "prompt": "Answer:",
         "submit_button": "Submit",
-        "solutions": [],
+        "solutions": [
+            {"type": "alphanumeric", "solution": "one two three"}
+        ],
         "visible": "(second.visible + 10 m) | second.solved"
     }');
 

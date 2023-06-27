@@ -448,6 +448,7 @@ dependencies = [
  "thiserror",
  "time",
  "time-expr",
+ "unicode-normalization",
 ]
 
 [[package]]

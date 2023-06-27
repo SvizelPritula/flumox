@@ -3,11 +3,12 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
 use crate::{
-    error::ViewResult,
+    action::{ActionContext, ActionEffect, Answer},
+    error::{ActionResult, ViewResult},
     expr::{Environment, Expr},
     solution::Solution,
     view_context::ViewContext,
-    EvalResult,
+    ActionError, EvalResult, Toast, ToastType,
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -70,5 +71,42 @@ impl Config {
             style: self.style.clone(),
             disabled: state.solved.is_some(),
         }))
+    }
+
+    pub fn submit_answer(
+        &self,
+        state: &State,
+        action: &Answer,
+        mut ctx: ActionContext,
+    ) -> ActionResult<State> {
+        let visible = ctx.env.own(&["visible"])?;
+        let visible = visible.to_bool(ctx.time);
+        let active = visible & state.solved.is_none();
+
+        if !active {
+            return Err(ActionError::NotPossible);
+        }
+
+        if let Some(solution) = self.solutions.iter().find(|s| s.check(&action.answer)) {
+            let mut state = state.clone();
+
+            state.solved = Some(SolutionDetails {
+                time: ctx.time,
+                canonical_text: solution.to_string(),
+            });
+
+            Ok(ActionEffect::new(
+                Some(state),
+                Some(Toast::new(
+                    "Solution correct".to_owned(),
+                    ToastType::Success,
+                )),
+            ))
+        } else {
+            Ok(ActionEffect::with_toast(Toast::new(
+                "Solution incorrect".to_owned(),
+                ToastType::Danger,
+            )))
+        }
     }
 }

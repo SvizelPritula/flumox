@@ -42,7 +42,7 @@ pub async fn login(
         }
         Err(err) => {
             error!("Failed to verify access code: {err}");
-            Err(err)
+            Err(err.into())
         }
     }
 }
@@ -55,7 +55,7 @@ pub async fn me(
         Ok(info) => Ok(Json(info)),
         Err(err) => {
             error!("Failed to obtain team info: {err}");
-            Err(err)
+            Err(err.into())
         }
     }
 }

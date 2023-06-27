@@ -75,7 +75,7 @@ where
             token: SessionToken,
         ) -> Result<Option<Session>, InternalError> {
             let mut db = pool.get().await?;
-            team_by_session_token(&mut db, token).await
+            Ok(team_by_session_token(&mut db, token).await?)
         }
 
         match parts.extract().await {
