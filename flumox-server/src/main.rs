@@ -1,10 +1,11 @@
-use std::{iter, net::SocketAddr};
+use std::{iter, net::SocketAddr, path::PathBuf};
 
 use anyhow::Result;
 use axum::{
     routing::{get, post},
     Router, Server,
 };
+use clap::Parser;
 use deadpool_postgres::{Manager, Pool};
 use http::{
     header::{
@@ -15,7 +16,7 @@ use http::{
 };
 use tokio_postgres::{Config, NoTls};
 use tower_http::{
-    compression::CompressionLayer, sensitive_headers::SetSensitiveHeadersLayer,
+    compression::CompressionLayer, sensitive_headers::SetSensitiveHeadersLayer, services::ServeDir,
     set_header::SetResponseHeaderLayer, trace::TraceLayer,
 };
 use tracing::info;
@@ -33,7 +34,7 @@ mod session;
 mod types;
 mod view;
 
-async fn serve(db: Pool) -> Result<()> {
+async fn serve(db: Pool, port: u16, serve: Option<PathBuf>) -> Result<()> {
     let api = Router::new()
         .route("/login", post(api::login))
         .route("/me", get(api::me))
@@ -49,7 +50,18 @@ async fn serve(db: Pool) -> Result<()> {
         ))
         .with_state(db);
 
-    let app = Router::new()
+    let app = if let Some(path) = serve {
+        Router::new().fallback_service(ServeDir::new(path)).layer(
+            SetResponseHeaderLayer::if_not_present(
+                CACHE_CONTROL,
+                HeaderValue::from_static("max-age=300"),
+            ),
+        )
+    } else {
+        Router::new()
+    };
+
+    let app = app
         .nest("/api/", api)
         .layer(CompressionLayer::new().deflate(true).gzip(true).br(true))
         .layer(SetResponseHeaderLayer::if_not_present(
@@ -69,7 +81,7 @@ async fn serve(db: Pool) -> Result<()> {
             X_AUTH_TOKEN.clone(),
         )));
 
-    let address = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], 3000));
+    let address = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], port));
 
     info!(%address, "Server started");
 
@@ -80,25 +92,39 @@ async fn serve(db: Pool) -> Result<()> {
     Ok(())
 }
 
-fn connect_db() -> Result<Pool> {
-    let mut config = Config::new();
-    config.host_path("/run/postgresql");
-    config.user("dev");
-    config.dbname("flumox");
-
+fn connect_db(config: Config) -> Result<Pool> {
     let manager = Manager::new(config, NoTls);
     let pool = Pool::builder(manager).build()?;
 
     Ok(pool)
 }
 
+#[derive(Debug, Parser)]
+/// A server for hosting puzzle hunts
+struct Options {
+    /// The port to listen on
+    #[arg(long, default_value_t = 3000, env)]
+    port: u16,
+    /// A connection string to a Postgres database
+    #[arg(
+        long,
+        default_value = "host='/run/postgresql' user=dev dbname=flumox",
+        env = "PG_CONFIG"
+    )]
+    db: Config,
+    /// A directory to serve at server root
+    #[arg(long)]
+    serve: Option<PathBuf>,
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
-    let stdout = fmt::layer().compact().with_filter(LevelFilter::INFO);
+    let options = Options::parse();
 
+    let stdout = fmt::layer().compact().with_filter(LevelFilter::INFO);
     registry().with(stdout).init();
 
-    let db = connect_db()?;
+    let db = connect_db(options.db)?;
 
-    serve(db).await
+    serve(db, options.port, options.serve).await
 }

@@ -9,6 +9,7 @@ async-trait = "0.1.68"
 axum = { version = "0.6.18", features = ["headers"] }
 base64 = "0.21.2"
 blake2 = "0.10.6"
+clap = { version = "4.3.8", features = ["derive", "env"] }
 deadpool-postgres = "0.10.5"
 fingerprint-struct = "0.1.0"
 flumox = { path = "../flumox" }
@@ -28,6 +29,7 @@ tokio-postgres = { version = "0.7.8", features = [
     "array-impls",
 ] }
 tower-http = { version = "0.4.1", features = [
+    "fs",
     "trace",
     "sensitive-headers",
     "compression-deflate",
