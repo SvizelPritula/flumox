@@ -7,7 +7,7 @@
 
 <div>
   {#if view.type == "prompt"}
-    <Prompt view={view.view} />
+    <Prompt view={view.view} id={view.id} on:action />
   {:else}
     Unknown view
   {/if}

@@ -6,5 +6,5 @@
 </script>
 
 {#each views as view (view.id)}
-  <Widget {view} />
+  <Widget {view} on:action />
 {/each}
