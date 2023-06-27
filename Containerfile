@@ -11,12 +11,28 @@ COPY Cargo.toml Cargo.lock ./
 
 RUN [ "cargo", "build", "--release", "--bin", "flumox-server" ]
 
+FROM docker.io/library/node:20.3-alpine3.18 as vite
+
+RUN npm config set update-notifier false
+
+WORKDIR /usr/src/flumox
+
+COPY flumox-client/*.json flumox-client/*.js flumox-client/*.ts ./
+
+RUN npm ci --no-audit --no-fund
+
+COPY flumox-client/src/ ./src/
+COPY flumox-client/index.html ./
+
+RUN npm run build
+
 FROM docker.io/library/alpine:3.18 AS runtime
 
 RUN apk add --no-cache tini
 
 COPY --from=cargo /usr/src/flumox/target/release/flumox-server /usr/local/bin/
+COPY --from=vite /usr/src/flumox/dist/ /srv/flumox/www/
 
 EXPOSE 3000
 
-ENTRYPOINT [ "tini", "flumox-server" ]
+ENTRYPOINT [ "tini", "flumox-server", "--serve", "/srv/flumox/www/" ]
