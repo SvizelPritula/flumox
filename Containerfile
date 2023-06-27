@@ -33,6 +33,7 @@ RUN apk add --no-cache tini
 COPY --from=cargo /usr/src/flumox/target/release/flumox-server /usr/local/bin/
 COPY --from=vite /usr/src/flumox/dist/ /srv/flumox/www/
 
-EXPOSE 3000
+ENV PORT=8000
+EXPOSE 8000
 
 ENTRYPOINT [ "tini", "flumox-server", "--serve", "/srv/flumox/www/" ]

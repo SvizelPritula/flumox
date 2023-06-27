@@ -103,7 +103,7 @@ fn connect_db(config: Config) -> Result<Pool> {
 /// A server for hosting puzzle hunts
 struct Options {
     /// The port to listen on
-    #[arg(long, default_value_t = 3000, env)]
+    #[arg(long, default_value_t = 8000, env)]
     port: u16,
     /// A connection string to a Postgres database
     #[arg(
