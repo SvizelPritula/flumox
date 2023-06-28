@@ -5,7 +5,6 @@ use axum::{
     routing::{get, post},
     Router, Server,
 };
-use deadpool_postgres::Pool;
 use http::{
     header::{
         CACHE_CONTROL, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_CONTENT_TYPE_OPTIONS,
@@ -19,9 +18,9 @@ use tower_http::{
 };
 use tracing::info;
 
-use crate::{api, session::X_AUTH_TOKEN};
+use crate::{api, session::X_AUTH_TOKEN, state::State};
 
-pub async fn serve(db: Pool, port: u16, serve: Option<PathBuf>) -> Result<()> {
+pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()> {
     let api = Router::new()
         .route("/login", post(api::login))
         .route("/me", get(api::me))
@@ -36,7 +35,7 @@ pub async fn serve(db: Pool, port: u16, serve: Option<PathBuf>) -> Result<()> {
             CONTENT_SECURITY_POLICY,
             HeaderValue::from_static("default-src 'none'"),
         ))
-        .with_state(db);
+        .with_state(state);
 
     let app = if let Some(path) = serve {
         Router::new().fallback_service(ServeDir::new(path)).layer(

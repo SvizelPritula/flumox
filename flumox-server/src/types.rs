@@ -13,6 +13,12 @@ pub struct TeamInfo {
     pub game: GameInfo,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub struct TeamId {
+    pub game: Uuid,
+    pub team: Uuid,
+}
+
 #[derive(Debug, Clone)]
 pub struct InstanceMetadata {
     pub id: Uuid,

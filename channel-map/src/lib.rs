@@ -3,6 +3,7 @@ use std::{collections::HashMap, hash::Hash, mem::ManuallyDrop, sync::Arc};
 use parking_lot::{RwLock, RwLockUpgradableReadGuard};
 use tokio::sync::broadcast::{self, error::RecvError};
 
+#[derive(Debug)]
 struct Inner<K, M> {
     map: HashMap<K, broadcast::Sender<M>>,
     capacity: usize,
@@ -10,6 +11,7 @@ struct Inner<K, M> {
 
 type SharedInner<K, M> = Arc<RwLock<Inner<K, M>>>;
 
+#[derive(Debug)]
 pub struct ChannelMap<K, M> {
     inner: SharedInner<K, M>,
 }
