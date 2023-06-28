@@ -1,2 +1,2 @@
 [workspace]
-members = ["flumox", "flumox-server", "time-expr"]
+members = ["flumox", "flumox-server", "time-expr", "channel-map"]

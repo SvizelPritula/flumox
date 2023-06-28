@@ -4,6 +4,7 @@ RUN apk add --no-cache musl-dev
 
 WORKDIR /usr/src/flumox
 
+COPY channel-map/ ./channel-map/
 COPY time-expr/ ./time-expr/
 COPY flumox/ ./flumox/
 COPY flumox-server/ ./flumox-server/
