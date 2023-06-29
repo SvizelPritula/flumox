@@ -19,6 +19,8 @@
       type: "answer",
       answer,
     });
+
+    answer = "";
   }
 </script>
 

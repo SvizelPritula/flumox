@@ -2,12 +2,15 @@ export type Connect = (retry: Reconnect) => Disconnect | null;
 export type Reconnect = () => void;
 export type Disconnect = () => void;
 
-const DELAY = 3000;
+const DELAY = 15000;
 
 export function reconnecting(connect: Connect, onDisconnect: Disconnect): Disconnect {
     let close = null;
+    let timeout = null;
 
     function start() {
+        timeout = null;
+
         let disconnected = false;
 
         function retry() {
@@ -23,15 +26,29 @@ export function reconnecting(connect: Connect, onDisconnect: Disconnect): Discon
 
             close = null;
 
-            setTimeout(start, DELAY);
+            timeout = setTimeout(start, DELAY);
         }
 
         close = connect(retry);
     }
 
+    function onOnline() {
+        if (timeout != null) {
+            clearInterval(timeout);
+            start();
+        }
+    }
+
     start();
 
+    window.addEventListener("online", onOnline);
+
     return () => {
+        window.removeEventListener("online", onOnline);
+
+        if (timeout != null)
+            clearTimeout(timeout);
+
         onDisconnect();
 
         if (close != null)
