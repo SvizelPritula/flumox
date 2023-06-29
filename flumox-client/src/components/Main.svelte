@@ -1,46 +1,39 @@
 <script lang="ts">
   import type { TeamInfo } from "../lib/team";
-  import { session } from "../stores";
+  import { online, session, view } from "../stores";
   import Toasts from "./Toasts.svelte";
   import Game from "./game/Game.svelte";
-  import { submit, view } from "../lib/api/game";
-  import type { Action } from "../lib/action";
-  import { toast } from "../lib/toast";
+  import { type Action, submit } from "../lib/action";
+  import { toast, type Toast } from "../lib/toast";
+  import { onMount } from "svelte";
+  import { sync } from "../lib/api/sync";
 
   export let team: TeamInfo;
   let inFlight = false;
 
-  $: state = view($session.token);
+  onMount(() => {
+    return sync(view, online, $session.token);
+  });
 
   async function action(payload: Action) {
     inFlight = true;
 
     try {
-      let response = await submit($session.token, payload);
-
-      if (response.result == "success") {
-        if (response.toast != null) {
-          toast(response.toast.text, response.toast.type);
-        }
-
-        state = view($session.token);
-      } else if (response.result == "dispatch-failed") {
-        toast(
-          "Failed to process action due to game configuration being out of sync",
-          "danger"
-        );
-      } else if (response.result == "not-possible") {
-        toast(
-          "Failed to process action due to game state being out of sync",
-          "danger"
-        );
-      }
+      submit(payload, $session.token);
     } catch (error) {
       toast(String(error), "danger");
     } finally {
       inFlight = false;
     }
   }
+
+  $: toasts = <Toast[]>[
+    !$online && {
+      key: "offline",
+      text: "Offline",
+      type: "info",
+    },
+  ].filter(Boolean);
 </script>
 
 <div>
@@ -48,16 +41,14 @@
     {team.game.name} <button on:click={() => ($session = null)}>Log out</button>
   </header>
 
-  <Toasts />
+  <Toasts permanent={toasts} />
 
   <main>
-    {#await state}
-      <p>Loading...</p>
-    {:then views}
-      <Game {views} on:action={(e) => action(e.detail)} />
-    {:catch}
-      <p>Failed to load</p>
-    {/await}
+    {#if $view != null}
+      <Game views={$view} on:action={(e) => action(e.detail)} />
+    {:else}
+      Loading...
+    {/if}
   </main>
 </div>
 

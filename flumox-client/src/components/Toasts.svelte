@@ -62,6 +62,10 @@
     background-color: hsl(140, 100%, 30%);
   }
 
+  .toast.info {
+    background-color: hsl(245, 100%, 30%);
+  }
+
   .text {
     flex-grow: 1;
   }

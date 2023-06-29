@@ -1,3 +1,5 @@
+import { session, view } from "../stores";
+
 export type SessionToken = string;
 
 export interface GameInfo {
@@ -13,3 +15,8 @@ export interface Session {
     token: SessionToken,
     team: TeamInfo
 };
+
+export function logout() {
+    session.set(null);
+    view.set(null);
+}
