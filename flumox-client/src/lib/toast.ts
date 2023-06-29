@@ -1,6 +1,6 @@
 import { toasts } from "../stores";
 
-export type ToastType = "danger" | "warning" | "success" | "info";
+export type ToastType = "danger" | "warning" | "success" | "status";
 
 export interface Toast {
     text: string,

@@ -33,7 +33,7 @@
     !$online && {
       key: "offline",
       text: statusOffline,
-      type: "info",
+      type: "status",
     },
   ].filter(Boolean);
 </script>

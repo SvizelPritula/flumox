@@ -63,8 +63,9 @@
     background-color: hsl(140, 100%, 30%);
   }
 
-  .toast.info {
+  .toast.status {
     background-color: hsl(245, 100%, 30%);
+    text-align: center;
   }
 
   .text {
