@@ -7,6 +7,7 @@
   export let view: PromptView;
   export let id: string;
   export let disabled: boolean;
+
   let answer = "";
 
   $: formDisabled = disabled || view.disabled;
@@ -43,7 +44,9 @@
     />
   </label>
 
-  <button type="submit" disabled={formDisabled} class={button}>Submit</button>
+  <button type="submit" disabled={formDisabled} class={button}>
+    {view.submit_button}
+  </button>
 </form>
 
 <style>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { View } from "../../lib/view";
   import Prompt from "./widgets/Prompt.svelte";
+  import { unknownView } from "$translations";
 
   export let view: View;
   export let disabled: boolean;
@@ -10,7 +11,7 @@
   {#if view.type == "prompt"}
     <Prompt view={view.view} id={view.id} {disabled} on:action />
   {:else}
-    Unknown view
+    {unknownView}
   {/if}
 </div>
 

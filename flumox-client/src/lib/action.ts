@@ -1,5 +1,6 @@
 import { toast, type ToastType } from "./toast";
 import { submit as submitRequest } from "./api/game"
+import { errorDispatchFailed, errorNotPossible } from "$translations";
 
 export interface AnswerAction {
     type: "answer",
@@ -28,14 +29,8 @@ export async function submit(payload: Action, token: string) {
             toast(response.toast.text, response.toast.type);
         }
     } else if (response.result == "dispatch-failed") {
-        toast(
-            "Failed to process action due to game configuration being out of sync",
-            "danger"
-        );
+        toast(errorDispatchFailed, "danger");
     } else if (response.result == "not-possible") {
-        toast(
-            "Failed to process action due to game state being out of sync",
-            "danger"
-        );
+        toast(errorNotPossible, "danger");
     }
 }

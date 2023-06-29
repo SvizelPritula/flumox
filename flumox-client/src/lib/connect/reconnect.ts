@@ -7,14 +7,17 @@ const DELAY = 15000;
 export function reconnecting(connect: Connect, onDisconnect: Disconnect): Disconnect {
     let close = null;
     let timeout = null;
+    let closed = false;
 
     function start() {
-        timeout = null;
+        if (closed)
+            return;
 
+        timeout = null;
         let disconnected = false;
 
         function retry() {
-            if (disconnected)
+            if (disconnected || closed)
                 return;
 
             disconnected = true;
@@ -44,6 +47,10 @@ export function reconnecting(connect: Connect, onDisconnect: Disconnect): Discon
     window.addEventListener("online", onOnline);
 
     return () => {
+        if (closed)
+            return;
+        closed = true;
+
         window.removeEventListener("online", onOnline);
 
         if (timeout != null)

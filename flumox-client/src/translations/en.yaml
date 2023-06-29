@@ -1,0 +1,22 @@
+appName: Flumox
+
+loadingOnline: Loading, please wait...
+loadingOffline: You are currently offline. Please connect to the internet to load widgets.
+
+toastClose: close
+unknownView: Tried to render unsupported widget type. Your client may be outdated. Try to reload.
+
+loginHeading: Login
+loginAccessCode: Access code
+loginButton: Submit
+loginSuccess: Logged in successfuly as team.
+loginIncorrect: Entered access code is not correct.
+
+statusOffline: Offline
+
+errorDispatchFailed: The game configuration has been changed and you cannot perform this action anymore. Please reload.
+errorNotPossible: Your team has made progress and you cannot perform this action anymore. Please reload.
+errorServerRejected: The server could not understand a sent message.
+errorMalformedMessage: The server sent an invalid message. Your client may be outdated. Try to reload.
+
+warningSessionExpired: You have been logged out. You may try to log in again.

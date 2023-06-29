@@ -7,6 +7,8 @@
   import { toast, type Toast } from "../lib/toast";
   import { onMount } from "svelte";
   import { sync } from "../lib/api/sync";
+  import { loadingOnline, loadingOffline, statusOffline } from "$translations";
+  import { appName } from "$translations";
 
   export let team: TeamInfo;
   let inFlight = false;
@@ -30,11 +32,15 @@
   $: toasts = <Toast[]>[
     !$online && {
       key: "offline",
-      text: "Offline",
+      text: statusOffline,
       type: "info",
     },
   ].filter(Boolean);
 </script>
+
+<svelte:head>
+  <title>{team.game.name} | {appName}</title>
+</svelte:head>
 
 <div>
   <header>
@@ -51,7 +57,7 @@
         disabled={inFlight}
       />
     {:else}
-      Loading...
+      {$online ? loadingOnline : loadingOffline}
     {/if}
   </main>
 </div>

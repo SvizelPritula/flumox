@@ -1,6 +1,7 @@
 <script lang="ts">
   import { dismiss, type Toast } from "../lib/toast";
   import { toasts } from "../stores";
+  import { toastClose } from "$translations";
 
   export let permanent: Toast[] = [];
 
@@ -17,7 +18,7 @@
       {#if dismissable}
         <button
           class="dismiss"
-          aria-label="close"
+          aria-label={toastClose}
           on:click={() => dismiss(key)}
         >
           <svg class="icon" viewBox="0 0 6 6">

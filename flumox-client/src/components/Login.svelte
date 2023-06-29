@@ -4,6 +4,13 @@
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
   import { button, input, label } from "../styles/forms.module.css";
+  import {
+    loginHeading,
+    loginAccessCode,
+    loginButton,
+    loginIncorrect,
+    loginSuccess,
+  } from "$translations";
 
   let code = "";
   let inFlight = false;
@@ -15,10 +22,10 @@
       let result = await login(code);
 
       if (result.result == "success") {
-        toast(`Logged in as ${result.team.name}`, "success");
+        toast(`${loginSuccess} ${result.team.name}.`, "success");
         $session = { team: result.team, token: result.token };
       } else {
-        toast("Incorrect access code", "danger");
+        toast(loginIncorrect, "danger");
         code = "";
       }
     } catch (error) {
@@ -33,10 +40,10 @@
   <Toasts />
 
   <form on:submit|preventDefault={submit}>
-    <h1>Login</h1>
+    <h1>{loginHeading}</h1>
 
     <label class={label}>
-      <div>Access code</div>
+      <div>{loginAccessCode}</div>
       <input
         bind:value={code}
         type="password"
@@ -46,7 +53,9 @@
       />
     </label>
 
-    <button type="submit" disabled={inFlight} class={button}>Submit</button>
+    <button type="submit" disabled={inFlight} class={button}>
+      {loginButton}
+    </button>
   </form>
 </main>
 

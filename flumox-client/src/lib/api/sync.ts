@@ -3,6 +3,7 @@ import type { Views } from "../view";
 import { reconnecting } from "../connect/reconnect";
 import { toast } from "../toast";
 import { logout } from "../team";
+import { errorServerRejected, errorMalformedMessage, warningSessionExpired } from "$translations";
 
 interface LoginMessage {
     type: "auth",
@@ -48,11 +49,11 @@ export function sync(view: Writable<Views | null>, online: Writable<boolean>, to
 
                 switch (payload.type) {
                     case "malformed-message":
-                        toast("Server rejected message", "danger");
+                        toast(errorServerRejected, "danger");
                         break;
 
                     case "unknown-token":
-                        toast("Session expired", "warning");
+                        toast(warningSessionExpired, "warning");
                         logout();
                         break;
 
@@ -60,10 +61,13 @@ export function sync(view: Writable<Views | null>, online: Writable<boolean>, to
                         online.set(true);
                         view.set(payload.widgets);
                         break;
+
+                    default:
+                        toast(errorMalformedMessage, "danger");
                 }
             } catch (error) {
                 console.error(error);
-                toast("Received malformed message", "danger");
+                toast(errorMalformedMessage, "danger");
             }
         });
 
