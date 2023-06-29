@@ -6,7 +6,7 @@ use base64::{
 };
 use getrandom::getrandom;
 use http::HeaderName;
-use serde::{Serialize, Serializer};
+use serde::{de, Deserialize, Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -53,6 +53,16 @@ impl Serialize for SessionToken {
         S: Serializer,
     {
         serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for SessionToken {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let string = String::deserialize(deserializer)?;
+        SessionToken::from_str(&string).map_err(de::Error::custom)
     }
 }
 

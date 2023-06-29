@@ -7,7 +7,7 @@ use deadpool_postgres::{Manager, Pool};
 use message::{ChannelSender, Channels};
 use server::serve;
 use state::State;
-use tokio::sync::watch;
+use tokio::sync::{broadcast, watch};
 use tokio_postgres::{Config, NoTls};
 use tracing_subscriber::{
     filter::LevelFilter, fmt, layer::SubscriberExt, registry, util::SubscriberInitExt, Layer,
@@ -51,21 +51,24 @@ fn connect_db(config: Config) -> Result<Pool> {
 }
 
 fn start_message_listener(config: Config) -> Channels {
-    let (sender, receiver) = watch::channel(false);
-    let game = ChannelMap::new(16);
-    let team = ChannelMap::new(16);
+    let (online_sender, online_receiver) = watch::channel(false);
+    let (reconnect, _) = broadcast::channel(1);
+    let game = ChannelMap::new(1);
+    let team = ChannelMap::new(1);
 
     tokio::spawn(message::listen(
         config,
         ChannelSender {
-            online: sender,
+            online: online_sender,
+            reconnect: reconnect.clone(),
             invalidate_game: game.clone(),
             invalidate_team: team.clone(),
         },
     ));
 
     Channels {
-        online: receiver,
+        online: online_receiver,
+        reconnect,
         invalidate_game: game,
         invalidate_team: team,
     }

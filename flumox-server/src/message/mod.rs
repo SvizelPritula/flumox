@@ -1,6 +1,6 @@
 use channel_map::ChannelMap;
 use serde::{Deserialize, Serialize};
-use tokio::sync::watch;
+use tokio::sync::{broadcast, watch};
 use uuid::Uuid;
 
 use crate::types::TeamId;
@@ -15,6 +15,7 @@ pub struct Invalidate;
 #[derive(Debug, Clone)]
 pub struct Channels {
     pub online: watch::Receiver<bool>,
+    pub reconnect: broadcast::Sender<Invalidate>,
     pub invalidate_game: ChannelMap<Uuid, Invalidate>,
     pub invalidate_team: ChannelMap<TeamId, Invalidate>,
 }
@@ -22,6 +23,7 @@ pub struct Channels {
 #[derive(Debug)]
 pub struct ChannelSender {
     pub online: watch::Sender<bool>,
+    pub reconnect: broadcast::Sender<Invalidate>,
     pub invalidate_game: ChannelMap<Uuid, Invalidate>,
     pub invalidate_team: ChannelMap<TeamId, Invalidate>,
 }

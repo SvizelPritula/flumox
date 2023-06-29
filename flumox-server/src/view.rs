@@ -6,11 +6,16 @@ use time_expr::EvalError;
 
 use crate::types::{InstanceMetadata, WidgetInstance};
 
+pub struct RenderResult {
+    pub widgets: Vec<WidgetInstance>,
+    pub valid_until: Option<OffsetDateTime>,
+}
+
 pub fn render(
     game: &GameState,
     meta: &HashMap<String, InstanceMetadata>,
     time: OffsetDateTime,
-) -> Result<Vec<WidgetInstance>, EvalError> {
+) -> Result<RenderResult, EvalError> {
     let mut cache = Cache::default();
     let mut tracker = TimeTracker::new(time);
 
@@ -29,5 +34,8 @@ pub fn render(
         }
     }
 
-    Ok(result)
+    Ok(RenderResult {
+        widgets: result,
+        valid_until: tracker.valid_until(),
+    })
 }

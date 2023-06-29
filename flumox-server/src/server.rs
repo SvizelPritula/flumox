@@ -26,6 +26,7 @@ pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()
         .route("/me", get(api::me))
         .route("/view", get(api::view))
         .route("/action", post(api::submit))
+        .route("/sync", get(api::sync_socket))
         .fallback(api::not_found)
         .layer(SetResponseHeaderLayer::if_not_present(
             CACHE_CONTROL,

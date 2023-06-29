@@ -30,7 +30,7 @@ pub async fn view(
         let (game, meta) = load_state(&mut db, game, team).await?;
         db.commit().await?;
 
-        Ok(render(&game, &meta, time)?)
+        Ok(render(&game, &meta, time)?.widgets)
     }
 
     let time = OffsetDateTime::now_utc();
@@ -59,7 +59,7 @@ pub async fn submit(
     match submit_action(&mut db, game, team, widget, action).await {
         Ok(r) => Ok(Json(r)),
         Err(error) => {
-            error!("failed to evaluate action: {error}");
+            error!("Failed to evaluate action: {error}");
             Err(error)
         }
     }
