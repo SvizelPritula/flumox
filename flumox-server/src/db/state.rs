@@ -7,7 +7,11 @@ use thiserror::Error;
 use tokio_postgres::{types::Json, Error};
 use uuid::Uuid;
 
-use crate::{error::InternalError, types::InstanceMetadata};
+use crate::{
+    error::InternalError,
+    message::{invalidate, InvalidateMessage},
+    types::InstanceMetadata,
+};
 
 pub async fn load_state(
     db: &mut Transaction<'_>,
@@ -63,6 +67,8 @@ pub async fn set_state(
     let statement = db.prepare_cached(SET_STATE).await?;
     db.execute(&statement, &[&game, &team, &widget, &Json(state)])
         .await?;
+
+    invalidate(db, InvalidateMessage::Team { game, team }).await?;
 
     Ok(())
 }

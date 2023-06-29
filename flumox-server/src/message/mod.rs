@@ -6,8 +6,10 @@ use uuid::Uuid;
 use crate::types::TeamId;
 
 mod listen;
+mod notify;
 
 pub use listen::listen;
+pub use notify::invalidate;
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct Invalidate;

@@ -126,6 +126,13 @@ async fn run(mut socket: WebSocket, pool: Pool, channels: Channels) -> Result<()
 
     loop {
         let validity = select! {
+            result = socket.recv() => {
+                if result.transpose()?.is_none() {
+                    break;
+                }
+
+                Validity::Valid
+            }
             result = async {
                 select!{
                     r = reconnect.recv() => r,
