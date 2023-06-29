@@ -34,6 +34,7 @@ async fn run_connection(
 
         if result.is_ok() {
             info!("Listening for messages");
+            let _ = channels.reconnect.send(Invalidate);
             channels.online.send_replace(true);
         }
 
