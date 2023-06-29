@@ -13,6 +13,7 @@ use tracing_subscriber::{
     filter::LevelFilter, fmt, layer::SubscriberExt, registry, util::SubscriberInitExt, Layer,
 };
 
+mod action;
 mod api;
 mod db;
 mod error;
