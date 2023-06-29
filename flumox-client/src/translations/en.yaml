@@ -9,7 +9,7 @@ unknownView: Tried to render unsupported widget type. Your client may be outdate
 loginHeading: Login
 loginAccessCode: Access code
 loginButton: Submit
-loginSuccess: Logged in successfuly as team.
+loginSuccess: Logged in successfuly as team
 loginIncorrect: Entered access code is not correct.
 
 statusOffline: Offline

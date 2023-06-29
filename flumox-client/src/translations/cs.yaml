@@ -1,0 +1,22 @@
+appName: Flumox
+
+loadingOnline: Data se načítají, počkejte...
+loadingOffline: Jste offline. Připojte se k internetu, aby se mohli načíst data.
+
+toastClose: zavřít
+unknownView: Stažen nepodporovaný modul. Váš klient může být zastaralý. Zkuste načíst stránku znovu.
+
+loginHeading: Přihlášení
+loginAccessCode: Přístupový kód
+loginButton: Odeslat
+loginSuccess: Přihlášen tým
+loginIncorrect: Tento přístupový kód není správný.
+
+statusOffline: Offline
+
+errorDispatchFailed: Konfigurace hry se změnila, takže tuto akci již nemůžete provést. Načtěte stránku znovu.
+errorNotPossible: Váš tým postoupil ve hře a tuto akci již nemůžete provést. Načtěte stránku znovu.
+errorServerRejected: Server nedokázal pochopit odeslanou zprávu.
+errorMalformedMessage: Přijata nepodporovaná zpráva. Váš klient může být zastaralý. Zkuste načíst stránku znovu.
+
+warningSessionExpired: Byli jste odhlášeni. Můžete se zkusit přihlásit znovu.

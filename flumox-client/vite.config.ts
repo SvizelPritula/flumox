@@ -2,7 +2,6 @@ import { defineConfig, Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { minify } from 'html-minifier-terser';
 import { parse as parseYaml } from "yaml";
-import { readFile } from "fs/promises";
 import { join as joinPath } from 'path';
 
 export default defineConfig((mode) => ({
@@ -13,7 +12,7 @@ export default defineConfig((mode) => ({
       } : {}
     }),
     minifyHtml(),
-    translate("en")
+    translate('cs')
   ],
   server: {
     proxy: {
@@ -38,7 +37,7 @@ function translate(lang: string): Plugin {
     },
     load(id) {
       if (id == moduleId) {
-        return `export * from ${JSON.stringify(path)};`
+        return `export * from ${JSON.stringify(path)};\n`
       }
     },
     transform(code, id) {
