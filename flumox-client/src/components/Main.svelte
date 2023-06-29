@@ -19,7 +19,7 @@
     inFlight = true;
 
     try {
-      submit(payload, $session.token);
+      await submit(payload, $session.token);
     } catch (error) {
       toast(String(error), "danger");
     } finally {
@@ -45,7 +45,11 @@
 
   <main>
     {#if $view != null}
-      <Game views={$view} on:action={(e) => action(e.detail)} />
+      <Game
+        views={$view}
+        on:action={(e) => action(e.detail)}
+        disabled={inFlight}
+      />
     {:else}
       Loading...
     {/if}

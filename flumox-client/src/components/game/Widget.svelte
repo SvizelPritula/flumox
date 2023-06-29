@@ -3,11 +3,12 @@
   import Prompt from "./widgets/Prompt.svelte";
 
   export let view: View;
+  export let disabled: boolean;
 </script>
 
 <div>
   {#if view.type == "prompt"}
-    <Prompt view={view.view} id={view.id} on:action />
+    <Prompt view={view.view} id={view.id} {disabled} on:action />
   {:else}
     Unknown view
   {/if}

@@ -3,8 +3,9 @@
   import Widget from "./Widget.svelte";
 
   export let views: Views;
+  export let disabled: boolean;
 </script>
 
 {#each views as view (view.id)}
-  <Widget {view} on:action />
+  <Widget {view} {disabled} on:action />
 {/each}

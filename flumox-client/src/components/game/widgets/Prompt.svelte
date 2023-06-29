@@ -6,9 +6,10 @@
 
   export let view: PromptView;
   export let id: string;
+  export let disabled: boolean;
   let answer = "";
 
-  $: disabled = view.disabled;
+  $: formDisabled = disabled || view.disabled;
 
   const dispatch = createEventDispatcher<{ action: Action }>();
 
@@ -35,12 +36,12 @@
       bind:value={answer}
       type="text"
       autocomplete="off"
-      {disabled}
+      disabled={formDisabled}
       class={input}
     />
   </label>
 
-  <button type="submit" {disabled} class={button}>Submit</button>
+  <button type="submit" disabled={formDisabled} class={button}>Submit</button>
 </form>
 
 <style>
