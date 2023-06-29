@@ -42,11 +42,5 @@ VALUES
         "solutions": [
             {"type": "alphanumeric", "solution": "one two three"}
         ],
-        "visible": "(second.visible + 10 m) | second.solved"
+        "visible": "(second.visible + 15 s) | second.solved"
     }');
-
-INSERT INTO state (game, team, widget, state)
-VALUES
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '{"type": "prompt", "solved": {"time": "2022-01-01T12:31:00.00+02:00", "canonical_text": ""}}'),
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', '{"type": "prompt", "solved": null}'),
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000000', '{"type": "prompt", "solved": null}');
