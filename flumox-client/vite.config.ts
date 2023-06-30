@@ -21,6 +21,9 @@ export default defineConfig((mode) => ({
         ws: true
       }
     }
+  },
+  build: {
+    modulePreload: { polyfill: false }
   }
 }));
 
