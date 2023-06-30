@@ -1,8 +1,21 @@
 import { defineConfig, Plugin } from 'vite';
 import { svelte } from '@sveltejs/vite-plugin-svelte';
+import { ManifestOptions, VitePWA } from "vite-plugin-pwa";
 import { minify } from 'html-minifier-terser';
 import { parse as parseYaml } from "yaml";
 import { join as joinPath } from 'path';
+
+const language = 'cs';
+
+const manifest: Partial<ManifestOptions> = {
+  name: "Flumox",
+  short_name: "Flumox",
+  description: "An app for playing outside games",
+  theme_color: "#262626",
+  background_color: "#0d0d0d",
+  lang: language,
+  icons: [],
+};
 
 export default defineConfig((mode) => ({
   plugins: [
@@ -11,8 +24,18 @@ export default defineConfig((mode) => ({
         cssHash: (({ hash, css }) => `_${hash(css)}`)
       } : {}
     }),
+    VitePWA({
+      strategies: "generateSW",
+      registerType: 'autoUpdate',
+      injectRegister: null,
+      filename: "worker.js",
+      workbox: {
+        inlineWorkboxRuntime: true
+      },
+      manifest
+    }),
     minifyHtml(),
-    translate('cs')
+    translate(language)
   ],
   server: {
     proxy: {
