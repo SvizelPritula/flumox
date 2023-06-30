@@ -24,8 +24,8 @@ use crate::{
     error::{InternalError, InternalErrorType},
     message::{Channels, Invalidate},
     session::{Session, SessionToken},
-    types::{TeamId, WidgetInstance},
-    view::{render, RenderResult},
+    types::TeamId,
+    view::{delta, render, RenderResult, WidgetInstanceDelta},
 };
 
 #[derive(Debug, Clone, Deserialize)]
@@ -39,7 +39,7 @@ enum IncomingMessage {
 enum OutgoingMessage<'a> {
     MalformedMessage,
     UnknownToken,
-    View { widgets: &'a [WidgetInstance] },
+    View { widgets: &'a [WidgetInstanceDelta] },
     Error { reason: InternalErrorType },
 }
 
@@ -53,7 +53,7 @@ fn unknown_token() -> Result<Message, serde_json::Error> {
     Ok(Message::Text(payload))
 }
 
-fn views(widgets: &[WidgetInstance]) -> Result<Message, serde_json::Error> {
+fn views(widgets: &[WidgetInstanceDelta]) -> Result<Message, serde_json::Error> {
     let payload = serde_json::to_string(&OutgoingMessage::View { widgets })?;
     Ok(Message::Text(payload))
 }
@@ -130,7 +130,7 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
         mut valid_until,
     } = render(&state, &meta, OffsetDateTime::now_utc())?;
 
-    socket.send(views(&widgets)?).await?;
+    socket.send(views(&delta(&widgets, &[]))?).await?;
 
     loop {
         let validity = select! {
@@ -166,12 +166,14 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
         }
 
         if validity != Validity::Valid {
-            RenderResult {
-                widgets,
-                valid_until,
+            let RenderResult {
+                widgets: new_widgets,
+                valid_until: new_valid_until,
             } = render(&state, &meta, OffsetDateTime::now_utc())?;
 
-            socket.send(views(&widgets)?).await?;
+            socket.send(views(&delta(&new_widgets, &widgets))?).await?;
+
+            (widgets, valid_until) = (new_widgets, new_valid_until);
         }
     }
 

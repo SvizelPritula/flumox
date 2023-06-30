@@ -12,4 +12,9 @@ export interface Instance {
     view: PromptView
 }
 
+export interface InstanceDelta {
+    id: string,
+    view?: PromptView
+}
+
 export type Instances = Instance[];

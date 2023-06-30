@@ -35,7 +35,7 @@ macro_rules! define_widgets {
             )*
         }
 
-        #[derive(Debug, Clone, Serialize, Fingerprint)]
+        #[derive(Debug, Clone, Serialize, Fingerprint, PartialEq, Eq)]
         #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum View {
             $(

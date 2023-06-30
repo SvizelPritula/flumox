@@ -1,5 +1,5 @@
 import type { Writable } from "svelte/store";
-import type { Instances } from "../view";
+import type { Instance, InstanceDelta, Instances } from "../view";
 import { reconnecting } from "../connect/reconnect";
 import { toast } from "../toast";
 import { logout } from "../team";
@@ -24,7 +24,7 @@ interface UnknownTokenMessage {
 
 interface ViewMessage {
     type: "view",
-    widgets: Instances
+    widgets: InstanceDelta[]
 }
 
 interface ErrorMessage {
@@ -42,6 +42,8 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
         url.protocol = url.protocol.endsWith('s') ? 'wss' : 'ws';
 
         let socket = new WebSocket(url);
+
+        let oldInstances: Instances = [];
 
         socket.addEventListener("open", () => {
             socket.send(JSON.stringify(<OutgoingMessage>{
@@ -66,7 +68,11 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
 
                     case "view":
                         online.set(true);
-                        view.set(payload.widgets);
+
+                        let instances = applyDelta(payload.widgets, oldInstances);
+
+                        oldInstances = instances;
+                        view.set(instances);
                         break;
 
                     case "error":
@@ -92,4 +98,27 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
     }, () => {
         online.set(false);
     });
+}
+
+function applyDelta(delta: InstanceDelta[], old: Instance[]): Instance[] {
+    let oldMap = new Map();
+
+    for (let { id, view } of old) {
+        oldMap.set(id, view);
+    }
+
+    let instances: Instance[] = [];
+
+    for (let { id, view } of delta) {
+        if (view != null) {
+            instances.push({ id, view })
+        } else {
+            let oldView = oldMap.get(id);
+
+            if (oldView != null)
+                instances.push({ id, view: oldView });
+        }
+    }
+
+    return instances;
 }

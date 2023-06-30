@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 
-use flumox::{Cache, Environment, GameState, TimeTracker, ViewContext};
+use flumox::{Cache, Environment, GameState, TimeTracker, View, ViewContext};
+use serde::Serialize;
 use time::OffsetDateTime;
 use time_expr::EvalError;
+use uuid::Uuid;
 
 use crate::types::{InstanceMetadata, WidgetInstance};
 
@@ -38,4 +40,32 @@ pub fn render(
         widgets: result,
         valid_until: tracker.valid_until(),
     })
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct WidgetInstanceDelta {
+    #[serde(skip_serializing_if="Option::is_none")]
+    pub view: Option<View>,
+    pub id: Uuid,
+}
+
+pub fn delta(new: &[WidgetInstance], old: &[WidgetInstance]) -> Vec<WidgetInstanceDelta> {
+    let old: HashMap<Uuid, &View> = old
+        .iter()
+        .map(|WidgetInstance { view, id }| (*id, view))
+        .collect();
+
+    let mut delta = Vec::new();
+
+    for WidgetInstance { view, id } in new {
+        let view = if old.get(id).copied().is_some_and(|old| old == view) {
+            None
+        } else {
+            Some(view.clone())
+        };
+
+        delta.push(WidgetInstanceDelta { view, id: *id });
+    }
+
+    delta
 }

@@ -24,14 +24,14 @@ pub struct State {
     solved: Option<SolutionDetails>,
 }
 
-#[derive(Debug, Clone, Serialize, Fingerprint)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Fingerprint)]
 pub struct View {
     #[serde(flatten)]
     style: Style,
     disabled: bool,
 }
 
-#[derive(Debug, Default, Clone, Serialize, Deserialize, Fingerprint)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Fingerprint)]
 struct Style {
     name: String,
     details: Vec<String>,
