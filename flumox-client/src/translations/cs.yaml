@@ -20,3 +20,11 @@ errorServerRejected: Server nedokázal pochopit odeslanou zprávu.
 errorMalformedMessage: Přijata nepodporovaná zpráva. Váš klient může být zastaralý. Zkuste načíst stránku znovu.
 
 warningSessionExpired: Byli jste odhlášeni. Můžete se zkusit přihlásit znovu.
+
+errorFetchNetwork: Připojení k serveru se nezdařilo. Ověřte, zda jste připojeni k internetu.
+errorFetchParsing: Server poslal neplatnou odpověď. Váš klient může být zastaralý. Zkuste načíst stránku znovu.
+errorFetchRequest: Server nedokázal pochopit požadavek. Váš klient může být zastaralý. Zkuste načíst stránku znovu.
+errorFetchDatabase: Serveru se nepodařilo komunikovat s databází. Prosíme, kontaktuje administrátora.
+errorFetchConfig: Hra je nastavená chybně. Prosíme, kontaktuje organizátora.
+errorFetchServer: Server narazil na neznámou chybu. Prosíme, kontaktuje administrátora.
+errorFetchUnknown: Nastala neznámá chyba při komunikaci se serverem.

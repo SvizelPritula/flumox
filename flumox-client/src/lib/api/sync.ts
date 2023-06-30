@@ -3,7 +3,9 @@ import type { Views } from "../view";
 import { reconnecting } from "../connect/reconnect";
 import { toast } from "../toast";
 import { logout } from "../team";
-import { errorServerRejected, errorMalformedMessage, warningSessionExpired } from "$translations";
+import { errorMalformedMessage, errorServerRejected, warningSessionExpired } from "$translations";
+import type { BadResponseType } from "./request";
+import { getErrorMessageForType } from "../error";
 
 interface LoginMessage {
     type: "auth",
@@ -25,7 +27,12 @@ interface ViewMessage {
     widgets: Views
 }
 
-type IncomingMessage = MalformedMessageMessage | UnknownTokenMessage | ViewMessage;
+interface ErrorMessage {
+    type: "error",
+    reason: BadResponseType
+}
+
+type IncomingMessage = MalformedMessageMessage | UnknownTokenMessage | ViewMessage | ErrorMessage;
 
 export function sync(view: Writable<Views | null>, online: Writable<boolean>, token: string): () => void {
     online.set(false);
@@ -60,6 +67,10 @@ export function sync(view: Writable<Views | null>, online: Writable<boolean>, to
                     case "view":
                         online.set(true);
                         view.set(payload.widgets);
+                        break;
+
+                    case "error":
+                        toast(getErrorMessageForType(payload.reason), "danger");
                         break;
 
                     default:

@@ -21,4 +21,12 @@ declare module "$translations" {
     const errorMalformedMessage: string;
 
     const warningSessionExpired: string;
+
+    const errorFetchNetwork: string;
+    const errorFetchParsing: string;
+    const errorFetchRequest: string;
+    const errorFetchDatabase: string;
+    const errorFetchConfig: string;
+    const errorFetchServer: string;
+    const errorFetchUnknown: string;
 }

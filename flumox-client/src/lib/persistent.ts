@@ -6,6 +6,7 @@ function localStorageSupported() {
     try {
         localStorage.setItem(testKey, testKey);
         localStorage.removeItem(testKey);
+
         return true;
     } catch {
         return false;

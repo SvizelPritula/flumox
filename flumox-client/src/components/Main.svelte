@@ -8,6 +8,7 @@
   import { onMount } from "svelte";
   import { sync } from "../lib/api/sync";
   import { loadingOnline, loadingOffline, statusOffline } from "$translations";
+  import { getErrorMessage } from "../lib/error";
   import { appName } from "$translations";
 
   export let team: TeamInfo;
@@ -23,7 +24,7 @@
     try {
       await submit(payload, $session.token);
     } catch (error) {
-      toast(String(error), "danger");
+      toast(getErrorMessage(error), "danger");
     } finally {
       inFlight = false;
     }

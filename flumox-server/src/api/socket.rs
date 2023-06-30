@@ -21,7 +21,7 @@ use tracing::warn;
 
 use crate::{
     db::{load_state, team_by_session_token, LoadStateError},
-    error::InternalError,
+    error::{InternalError, InternalErrorType},
     message::{Channels, Invalidate},
     session::{Session, SessionToken},
     types::{TeamId, WidgetInstance},
@@ -40,6 +40,7 @@ enum OutgoingMessage<'a> {
     MalformedMessage,
     UnknownToken,
     View { widgets: &'a [WidgetInstance] },
+    Error { reason: InternalErrorType },
 }
 
 fn malformed_message() -> Result<Message, serde_json::Error> {
@@ -54,6 +55,13 @@ fn unknown_token() -> Result<Message, serde_json::Error> {
 
 fn views(widgets: &[WidgetInstance]) -> Result<Message, serde_json::Error> {
     let payload = serde_json::to_string(&OutgoingMessage::View { widgets })?;
+    Ok(Message::Text(payload))
+}
+
+fn internal_error(error: &InternalError) -> Result<Message, serde_json::Error> {
+    let payload = serde_json::to_string(&OutgoingMessage::Error {
+        reason: error.public_type(),
+    })?;
     Ok(Message::Text(payload))
 }
 
@@ -81,7 +89,7 @@ async fn wait_until(time: OffsetDateTime) {
     }
 }
 
-async fn run(mut socket: WebSocket, pool: Pool, channels: Channels) -> Result<(), RunSocketError> {
+async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(), RunSocketError> {
     let token = loop {
         match socket.recv().await.transpose()? {
             Some(Message::Text(payload)) => match serde_json::from_str(&payload) {
@@ -178,8 +186,17 @@ pub async fn sync_socket(
     ws.on_failed_upgrade(|error| {
         warn!("Websocket upgrade failed: {error}");
     })
-    .on_upgrade(|socket| async {
-        if let Err(error) = run(socket, pool, channels).await {
+    .on_upgrade(|mut socket| async move {
+        if let Err(error) = run(&mut socket, pool, channels).await {
+            match &error {
+                RunSocketError::Internal(error) => {
+                    if let Ok(payload) = internal_error(&error) {
+                        let _ = socket.send(payload).await;
+                    }
+                }
+                RunSocketError::Serialize(_) | RunSocketError::Transport(_) => {}
+            }
+
             warn!("Websocket connection closed due to error: {error}");
         };
     })

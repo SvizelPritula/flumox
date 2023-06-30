@@ -4,6 +4,7 @@
   import { session } from "../stores";
   import Toasts from "./Toasts.svelte";
   import { button, input, label } from "../styles/forms.module.css";
+  import { getErrorMessage } from "../lib/error";
   import {
     loginHeading,
     loginAccessCode,
@@ -29,7 +30,7 @@
         code = "";
       }
     } catch (error) {
-      toast(String(error), "danger");
+      toast(getErrorMessage(error), "danger");
     } finally {
       inFlight = false;
     }

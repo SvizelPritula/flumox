@@ -20,3 +20,11 @@ errorServerRejected: The server could not understand a sent message.
 errorMalformedMessage: The server sent an invalid message. Your client may be outdated. Try to reload.
 
 warningSessionExpired: You have been logged out. You may try to log in again.
+
+errorFetchNetwork: Failed to connect to the server. Make sure you're connected to the internet.
+errorFetchParsing: Failed to parse the server's response. Your client may be outdated. Try to reload.
+errorFetchRequest: The server could not understand your request. Your client may be outdated. Try to reload.
+errorFetchDatabase: The server failed to comunicate with the database. Please contact an administrator.
+errorFetchConfig: The game is configured incorrectly. Please contact an organizer.
+errorFetchServer: The server experienced an unknown issue. Please contact an administrator.
+errorFetchUnknown: An unknown issue occured when communicating with the server.

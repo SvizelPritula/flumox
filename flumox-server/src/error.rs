@@ -30,6 +30,13 @@ pub enum InternalError {
     },
 }
 
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum InternalErrorType {
+    Database,
+    Config,
+}
+
 #[derive(Serialize)]
 pub struct ErrorResponse<E> {
     pub reason: E,
@@ -41,25 +48,20 @@ impl<E> ErrorResponse<E> {
     }
 }
 
+impl InternalError {
+    pub fn public_type(&self) -> InternalErrorType {
+        match self {
+            InternalError::Database { .. } => InternalErrorType::Database,
+            InternalError::Pool => InternalErrorType::Database,
+            InternalError::BadStateType { .. } => InternalErrorType::Config,
+            InternalError::Eval { .. } => InternalErrorType::Config,
+        }
+    }
+}
+
 impl IntoResponse for InternalError {
     fn into_response(self) -> Response {
-        #[derive(Serialize)]
-        #[serde(rename_all = "kebab-case")]
-        enum Type {
-            Database,
-            BadState,
-        }
-
-        let response = ErrorResponse {
-            reason: match self {
-                InternalError::Database { .. } => Type::Database,
-                InternalError::Pool => Type::Database,
-                InternalError::BadStateType { .. } => Type::BadState,
-                InternalError::Eval { .. } => Type::BadState,
-            },
-        };
-
-        (StatusCode::INTERNAL_SERVER_ERROR, Json(response)).into_response()
+        (StatusCode::INTERNAL_SERVER_ERROR, Json(self.public_type())).into_response()
     }
 }
 
