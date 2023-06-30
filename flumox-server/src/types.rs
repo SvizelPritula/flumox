@@ -26,7 +26,6 @@ pub struct InstanceMetadata {
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WidgetInstance {
-    #[serde(flatten)]
     pub view: View,
     pub id: Uuid,
 }

@@ -1,8 +1,8 @@
 <script lang="ts">
-  import type { Views } from "../../lib/view";
+  import type { Instances } from "../../lib/view";
   import Widget from "./Widget.svelte";
 
-  export let views: Views;
+  export let views: Instances;
   export let disabled: boolean;
 </script>
 

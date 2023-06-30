@@ -36,7 +36,7 @@ macro_rules! define_widgets {
         }
 
         #[derive(Debug, Clone, Serialize, Fingerprint)]
-        #[serde(rename_all = "kebab-case", tag = "type", content = "view")]
+        #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum View {
             $(
                 $type($module::View),
@@ -74,14 +74,14 @@ macro_rules! define_widgets {
                     )*
                 }
             }
-        
+
             pub fn view(&self, ctx: ViewContext) -> ViewResult<View> {
                 let view = match self {
                     $(
                         Instance::$type(c, s) => c.view(s, ctx)?.map(View::$type),
                     )*
                 };
-        
+
                 Ok(view)
             }
         }

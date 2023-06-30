@@ -1,8 +1,8 @@
 import type { Action, ActionResponse } from "../action";
-import type { Views } from "../view";
+import type { Instances } from "../view";
 import { get, post } from "./request";
 
-export function view(token: string): Promise<Views> {
+export function view(token: string): Promise<Instances> {
     return get("/api/view", token);
 }
 

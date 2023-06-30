@@ -1,5 +1,5 @@
 import type { Writable } from "svelte/store";
-import type { Views } from "../view";
+import type { Instances } from "../view";
 import { reconnecting } from "../connect/reconnect";
 import { toast } from "../toast";
 import { logout } from "../team";
@@ -24,7 +24,7 @@ interface UnknownTokenMessage {
 
 interface ViewMessage {
     type: "view",
-    widgets: Views
+    widgets: Instances
 }
 
 interface ErrorMessage {
@@ -34,7 +34,7 @@ interface ErrorMessage {
 
 type IncomingMessage = MalformedMessageMessage | UnknownTokenMessage | ViewMessage | ErrorMessage;
 
-export function sync(view: Writable<Views | null>, online: Writable<boolean>, token: string): () => void {
+export function sync(view: Writable<Instances | null>, online: Writable<boolean>, token: string): () => void {
     online.set(false);
 
     return reconnecting(retry => {
