@@ -25,6 +25,7 @@ CREATE TABLE public.widget
     id uuid NOT NULL,
     ident text NOT NULL,
     config jsonb NOT NULL,
+    priority bigint NOT NULL,
     PRIMARY KEY (game, id),
     FOREIGN KEY (game)
         REFERENCES public.game (id) MATCH SIMPLE

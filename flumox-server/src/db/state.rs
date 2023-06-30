@@ -23,7 +23,7 @@ pub async fn load_state(
         "FROM widget LEFT JOIN state ",
         "ON state.game=widget.game AND state.widget=widget.id AND state.team=$2 ",
         "WHERE widget.game=$1 ",
-        "ORDER BY widget.id"
+        "ORDER BY widget.priority DESC"
     );
 
     let statement = db.prepare_cached(LOAD_STATE).await?;
