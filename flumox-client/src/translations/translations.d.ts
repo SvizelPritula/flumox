@@ -1,5 +1,6 @@
 declare module "$translations" {
     const appName: string;
+    const appDescription: string;
 
     const loadingOnline: string;
     const loadingOffline: string;
@@ -29,4 +30,6 @@ declare module "$translations" {
     const errorFetchConfig: string;
     const errorFetchServer: string;
     const errorFetchUnknown: string;
+
+    const noscript: string;
 }

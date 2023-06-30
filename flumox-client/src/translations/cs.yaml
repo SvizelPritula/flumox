@@ -1,4 +1,5 @@
 appName: Flumox
+appDescription: Aplikace pro hraní venkovních her
 
 loadingOnline: Data se načítají, počkejte...
 loadingOffline: Jste offline. Připojte se k internetu, aby se mohli načíst data.
@@ -28,3 +29,5 @@ errorFetchDatabase: Serveru se nepodařilo komunikovat s databází. Prosíme, k
 errorFetchConfig: Hra je nastavená chybně. Prosíme, kontaktuje organizátora.
 errorFetchServer: Server narazil na neznámou chybu. Prosíme, kontaktuje administrátora.
 errorFetchUnknown: Nastala neznámá chyba při komunikaci se serverem.
+
+noscript: Tato aplikace vyžaduje JavaScript. Prosíme, <a href="https://www.enable-javascript.com/cz/">zapněte JavaScript</a>.

@@ -1,4 +1,5 @@
 appName: Flumox
+appDescription: An app for playing outdoor games
 
 loadingOnline: Loading, please wait...
 loadingOffline: You are currently offline. Please connect to the internet to load widgets.
@@ -28,3 +29,5 @@ errorFetchDatabase: The server failed to comunicate with the database. Please co
 errorFetchConfig: The game is configured incorrectly. Please contact an organizer.
 errorFetchServer: The server experienced an unknown issue. Please contact an administrator.
 errorFetchUnknown: An unknown issue occured when communicating with the server.
+
+noscript: This application requires JavaScript. Please, <a href="https://www.enable-javascript.com/">enable JavaScript</a>.
