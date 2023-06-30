@@ -13,6 +13,12 @@ loginButton: Odeslat
 loginSuccess: Přihlášen tým
 loginIncorrect: Tento přístupový kód není správný.
 
+settingsOpen: nastavení
+settingsClose: zpět do hry
+settingsName: Nastavení
+settingsLoggedIn: Jste přihlášeni jako tým
+settingsLogout: Odhlásit se
+
 statusOffline: Offline
 
 errorDispatchFailed: Konfigurace hry se změnila, takže tuto akci již nemůžete provést. Načtěte stránku znovu.

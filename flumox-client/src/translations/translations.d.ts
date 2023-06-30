@@ -14,6 +14,12 @@ declare module "$translations" {
     const loginSuccess: string;
     const loginIncorrect: string;
 
+    const settingsOpen: string;
+    const settingsClose: string;
+    const settingsName: string;
+    const settingsLoggedIn: string;
+    const settingsLogout: string;
+
     const statusOffline: string;
 
     const errorDispatchFailed: string;

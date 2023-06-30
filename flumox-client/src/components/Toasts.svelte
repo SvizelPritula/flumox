@@ -2,6 +2,7 @@
   import { dismiss, type Toast } from "../lib/toast";
   import { toasts } from "../stores";
   import { toastClose } from "$translations";
+  import Cross from "./icons/Cross.svelte";
 
   export let permanent: Toast[] = [];
 
@@ -21,10 +22,7 @@
           aria-label={toastClose}
           on:click={() => dismiss(key)}
         >
-          <svg class="icon" viewBox="0 0 6 6">
-            <line x1="1" y1="1" x2="5" y2="5" stroke="currentColor" />
-            <line x1="1" y1="5" x2="5" y2="1" stroke="currentColor" />
-          </svg>
+          <Cross />
         </button>
       {/if}
     </div>
@@ -79,7 +77,6 @@
     width: 1rem;
     height: 1rem;
     padding: 0;
-    font-size: 1rem;
     color: hsl(0, 0%, 80%);
   }
 

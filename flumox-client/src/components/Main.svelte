@@ -7,12 +7,23 @@
   import { toast, type Toast } from "../lib/toast";
   import { onMount } from "svelte";
   import { sync } from "../lib/api/sync";
-  import { loadingOnline, loadingOffline, statusOffline } from "$translations";
   import { getErrorMessage } from "../lib/error";
-  import { appName } from "$translations";
+  import Settings from "./Settings.svelte";
+  import Cross from "./icons/Cross.svelte";
+  import {
+    appName,
+    settingsName,
+    settingsOpen,
+    settingsClose,
+    loadingOnline,
+    loadingOffline,
+    statusOffline,
+  } from "$translations";
+  import Gear from "./icons/Gear.svelte";
 
   export let team: TeamInfo;
   let inFlight = false;
+  let settingsActive = false;
 
   onMount(() => {
     return sync(view, online, $session.token);
@@ -37,28 +48,45 @@
       type: "status",
     },
   ].filter(Boolean);
+
+  $: screenName = !settingsActive ? team.game.name : settingsName;
 </script>
 
 <svelte:head>
-  <title>{team.game.name} | {appName}</title>
+  <title>{screenName} | {appName}</title>
 </svelte:head>
 
 <div>
   <header>
-    {team.game.name} <button on:click={() => ($session = null)}>Log out</button>
+    <div class="name">{screenName}</div>
+    <button
+      class="settings"
+      aria-label={settingsActive ? settingsClose : settingsOpen}
+      on:click={() => (settingsActive = !settingsActive)}
+    >
+      {#if !settingsActive}
+        <Gear />
+      {:else}
+        <Cross />
+      {/if}
+    </button>
   </header>
 
   <Toasts permanent={toasts} />
 
   <main>
-    {#if $view != null}
-      <Game
-        views={$view}
-        on:action={(e) => action(e.detail)}
-        disabled={inFlight}
-      />
+    {#if !settingsActive}
+      {#if $view != null}
+        <Game
+          views={$view}
+          on:action={(e) => action(e.detail)}
+          disabled={inFlight}
+        />
+      {:else}
+        {$online ? loadingOnline : loadingOffline}
+      {/if}
     {:else}
-      {$online ? loadingOnline : loadingOffline}
+      <Settings {team} />
     {/if}
   </main>
 </div>
@@ -69,14 +97,40 @@
     width: 100%;
   }
 
+  main {
+    padding: 0 2rem;
+  }
+
   header {
     min-height: 3rem;
     background-color: hsl(0, 0%, 15%);
     padding: 0.5rem 2rem;
     font-size: 1.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
   }
 
-  main {
-    padding: 0 2rem;
+  .name {
+    flex-grow: 1;
+  }
+
+  .settings {
+    background-color: transparent;
+    border: none;
+    border-radius: 0.5rem;
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    color: hsl(0, 0%, 80%);
+  }
+
+  .settings:hover {
+    color: hsl(0, 0%, 100%);
+  }
+
+  .settings:focus-within {
+    outline: 0.2rem solid white;
+    outline-offset: 0.1rem;
   }
 </style>

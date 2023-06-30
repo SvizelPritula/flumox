@@ -13,6 +13,12 @@ loginButton: Submit
 loginSuccess: Logged in successfuly as team
 loginIncorrect: Entered access code is not correct.
 
+settingsOpen: settings
+settingsClose: back to game
+settingsName: Settings
+settingsLoggedIn: You are logged in as
+settingsLogout: Log out
+
 statusOffline: Offline
 
 errorDispatchFailed: The game configuration has been changed and you cannot perform this action anymore. Please reload.
