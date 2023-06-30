@@ -4,8 +4,6 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-digest = "0.10.7"
-fingerprint-struct = "0.1.0"
 indexmap = "2.0.0"
 serde = { version = "1.0.164", features = ["derive"] }
 thiserror = "1.0.40"

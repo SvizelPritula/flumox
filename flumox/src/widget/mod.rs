@@ -1,4 +1,3 @@
-use fingerprint_struct::Fingerprint;
 use serde::{Deserialize, Serialize};
 
 use crate::{
@@ -8,7 +7,9 @@ use crate::{
     EvalResult,
 };
 
+mod countdown;
 mod prompt;
+mod text;
 
 macro_rules! define_widgets {
     ($($type: ident, $module: ident);*) => {
@@ -35,7 +36,7 @@ macro_rules! define_widgets {
             )*
         }
 
-        #[derive(Debug, Clone, Serialize, Fingerprint, PartialEq, Eq)]
+        #[derive(Debug, Clone, Serialize, PartialEq, Eq)]
         #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum View {
             $(
@@ -88,4 +89,8 @@ macro_rules! define_widgets {
     };
 }
 
-define_widgets!(Prompt, prompt);
+define_widgets!(
+    Prompt, prompt;
+    Text, text;
+    Countdown, countdown
+);

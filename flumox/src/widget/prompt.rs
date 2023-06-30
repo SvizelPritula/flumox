@@ -1,4 +1,3 @@
-use fingerprint_struct::Fingerprint;
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
@@ -24,14 +23,14 @@ pub struct State {
     solved: Option<SolutionDetails>,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Fingerprint)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct View {
     #[serde(flatten)]
     style: Style,
     disabled: bool,
 }
 
-#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize, Fingerprint)]
+#[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 struct Style {
     name: String,
     details: Vec<String>,
