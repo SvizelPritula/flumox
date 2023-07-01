@@ -2,7 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use channel_map::ChannelMap;
-use clap::Parser;
+use clap::{ArgAction, Parser};
 use deadpool_postgres::{Manager, Pool};
 use message::{ChannelSender, Channels};
 use server::serve;
@@ -42,7 +42,7 @@ struct Options {
     #[arg(long)]
     serve: Option<PathBuf>,
     /// Whether to use ANSI codes in output
-    #[arg(long, default_value_t = true, env = "LOG_COLOR")]
+    #[arg(long, default_value_t = true, env = "LOG_COLOR", action=ArgAction::Set)]
     color: bool,
 }
 
