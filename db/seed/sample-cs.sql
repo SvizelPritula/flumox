@@ -39,7 +39,7 @@ VALUES
             "Zde se první dvě nápovědy odemknou chvíli po příchodu na šifru, třetí až po vyčerpání prvních dvou."
         ],
         "prompt": "Řešení:",
-        "submit_button": "Submit",
+        "submit_button": "Odeslat",
         "solutions": [
             {"type": "number", "solution": 2},
             {"type": "alphanumeric", "solution": "dva"},
