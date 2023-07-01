@@ -129,14 +129,16 @@ impl Config {
             return Ok(None);
         }
 
+        let solved = state.solved.is_some();
+
         let mut hints = Vec::new();
 
         for hint in &self.hints {
-            if !ctx.time.if_after(ctx.env.eval(&hint.visible)?) {
+            if !solved && !ctx.time.if_after(ctx.env.eval(&hint.visible)?) {
                 continue;
             }
 
-            let state = if state.hints.contains_key(&hint.ident) {
+            let state = if solved || state.hints.contains_key(&hint.ident) {
                 HintStateView::Taken {
                     content: hint.content.clone(),
                 }
@@ -169,7 +171,7 @@ impl Config {
 
         Ok(Some(View {
             style: self.style.clone(),
-            disabled: state.solved.is_some(),
+            disabled: solved,
             hints,
         }))
     }
