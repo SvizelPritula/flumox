@@ -9,7 +9,13 @@ VALUES
 
 INSERT INTO widget (game, id, ident, priority, config)
 VALUES
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'first', 10, '{
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'intro', 0, '{
+        "type": "text",
+        "heading": "Intro",
+        "content": ["Welcome!"],
+        "visible": "always"
+    }'),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'first', 10, '{
         "type": "prompt",
         "name": "First",
         "details": ["This is the first cipher.", "Please solve it and submit the solution."],
@@ -21,7 +27,13 @@ VALUES
         ],
         "visible": "2022-01-01 12:00 +2"
     }'),
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'second', 20, '{
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000002', 'move', 15, '{
+        "type": "text",
+        "heading": "Instructions",
+        "content": ["Please go to the second cipher"],
+        "visible": "first.solved"
+    }'),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000003', 'second', 20, '{
         "type": "prompt",
         "name": "Second",
         "details": ["Good luck with the second cipher!"],
@@ -33,7 +45,7 @@ VALUES
         ],
         "visible": "first.solved"
     }'),
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000002', 'third', 30, '{
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000004', 'third', 30, '{
         "type": "prompt",
         "name": "Third",
         "details": [],
@@ -43,4 +55,12 @@ VALUES
             {"type": "alphanumeric", "solution": "one two three"}
         ],
         "visible": "(second.visible + 15 s) | second.solved"
+    }'),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000005', 'countdown', 40, '{
+        "type": "countdown",
+        "name": "This is a countdown",
+        "details": ["What will happen?"],
+        "done_text": "Done!",
+        "time": "(second.solved + 10h) | (third.solved + 30s)",
+        "visible": "first.solved"
     }');

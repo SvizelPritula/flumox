@@ -11,7 +11,7 @@ use crate::{
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
-    heading: Option<String>,
+    name: Option<String>,
     details: Vec<String>,
     time: Expr,
     visible: Expr,
@@ -23,7 +23,7 @@ pub struct State;
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 pub struct View {
-    heading: Option<String>,
+    name: Option<String>,
     details: Vec<String>,
     value: CountdownValue,
 }
@@ -32,8 +32,13 @@ pub struct View {
 #[serde(rename_all = "kebab-case", tag = "type")]
 pub enum CountdownValue {
     Unknown,
-    Time { time: OffsetDateTime },
-    Done { text: String },
+    Time {
+        #[serde(with = "time::serde::rfc3339")]
+        time: OffsetDateTime,
+    },
+    Done {
+        text: String,
+    },
 }
 
 impl Config {
@@ -76,7 +81,7 @@ impl Config {
         };
 
         Ok(Some(View {
-            heading: self.heading.clone(),
+            name: self.name.clone(),
             details: self.details.clone(),
             value,
         }))

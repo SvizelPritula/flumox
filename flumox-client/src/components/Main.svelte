@@ -58,7 +58,7 @@
 
 <div>
   <header>
-    <div class="name">{screenName}</div>
+    <h1 class="name">{screenName}</h1>
     <button
       class="settings"
       aria-label={settingsActive ? settingsClose : settingsOpen}
@@ -111,7 +111,10 @@
     align-items: center;
   }
 
-  .name {
+  h1 {
+    font-size: unset;
+    margin: unset;
+    font-weight: bold;
     flex-grow: 1;
   }
 

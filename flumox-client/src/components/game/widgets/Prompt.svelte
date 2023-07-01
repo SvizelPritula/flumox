@@ -48,10 +48,3 @@
     {view.submit_button}
   </button>
 </form>
-
-<style>
-  h2 {
-    margin: 0;
-    margin-bottom: 1rem;
-  }
-</style>

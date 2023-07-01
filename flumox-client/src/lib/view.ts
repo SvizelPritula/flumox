@@ -7,9 +7,30 @@ export interface PromptView {
     disabled: boolean,
 }
 
+export interface TextView {
+    type: "text",
+    heading: string | null,
+    content: string[],
+}
+
+export interface CountdownView {
+    type: "countdown",
+    name: string | null,
+    details: string[],
+    value: {
+        type: "unknown"
+    } | {
+        type: "time",
+        time: string
+    } | {
+        type: "done",
+        text: string
+    },
+}
+
 export interface Instance {
     id: string,
-    view: PromptView
+    view: PromptView | TextView | CountdownView
 }
 
 export interface InstanceDelta {
