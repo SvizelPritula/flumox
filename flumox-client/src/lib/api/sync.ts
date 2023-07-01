@@ -39,7 +39,7 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
 
     return reconnecting(retry => {
         let url = new URL("/api/sync", window.location.href);
-        url.protocol = url.protocol.endsWith('s') ? 'wss' : 'ws';
+        url.protocol = url.protocol == 'https:' ? 'wss' : 'ws';
 
         let socket = new WebSocket(url);
 
