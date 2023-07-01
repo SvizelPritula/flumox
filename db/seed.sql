@@ -27,7 +27,27 @@ VALUES
         ],
         "visible": "2022-01-01 12:00 +2",
         "on_solution_correct": "Yup!",
-        "on_solution_incorrect": "Nope!"
+        "on_solution_incorrect": "Nope!",
+        "hints": [
+            {
+                "ident": "simple",
+                "name": "Simple hint",
+                "content": ["Try to solve the cipher.", "It might help."],
+                "available": "this.visible + 15s",
+                "visible": "always",
+                "take_button": "Take",
+                "on_hint_taken": "Hint taken."
+            },
+            {
+                "ident": "complex",
+                "name": "Complex hint",
+                "content": ["The answer is 1."],
+                "available": "this.hint.simple.taken + 15s",
+                "visible": "always",
+                "take_button": "Take the complex hint",
+                "on_hint_taken": "Complex hint taken."
+            }
+        ]
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000002', 'move', 15, '{
         "type": "text",

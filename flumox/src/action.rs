@@ -7,6 +7,7 @@ use crate::{error::ActionResult, ActionError, Environment, Instance, State, Toas
 #[serde(rename_all = "kebab-case", tag = "type")]
 pub enum Action {
     Answer(Answer),
+    Hint(Hint),
 }
 
 impl Instance {
@@ -15,7 +16,9 @@ impl Instance {
             (Instance::Prompt(config, state), Action::Answer(action)) => config
                 .submit_answer(state, action, ctx)
                 .map(|e| e.map(State::Prompt)),
-            #[allow(unreachable_patterns)]
+            (Instance::Prompt(config, state), Action::Hint(action)) => config
+                .take_hint(state, action, ctx)
+                .map(|e| e.map(State::Prompt)),
             _ => Err(ActionError::WidgetMismatch),
         }
     }
@@ -62,4 +65,9 @@ pub struct ActionContext<'a> {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Answer {
     pub answer: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Hint {
+    pub ident: String,
 }

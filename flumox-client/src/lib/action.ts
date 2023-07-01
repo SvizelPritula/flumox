@@ -7,11 +7,16 @@ export interface AnswerAction {
     answer: string
 }
 
+export interface HintAction {
+    type: "hint",
+    ident: string
+}
+
 export interface Metadata {
     widget: string
 }
 
-export type Action = AnswerAction & Metadata;
+export type Action = (AnswerAction | HintAction) & Metadata;
 
 export type ActionResponse = {
     result: "success",

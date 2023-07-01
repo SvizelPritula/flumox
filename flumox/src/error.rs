@@ -10,7 +10,7 @@ pub struct StateMismatchError;
 #[derive(Debug, Clone, Error)]
 pub enum ActionError {
     #[error("this widget does not exist")]
-    UnknownWidget,
+    UnknownIdent,
     #[error("action not allowed for widget")]
     WidgetMismatch,
     #[error("action cannot be currently sent to widget")]

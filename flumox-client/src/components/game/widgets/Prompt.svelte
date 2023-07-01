@@ -3,6 +3,7 @@
   import type { PromptView } from "../../../lib/view";
   import { button, input, label } from "../../../styles/forms.module.css";
   import type { Action } from "../../../lib/action";
+  import Hint from "./Hint.svelte";
 
   export let view: PromptView;
   export let id: string;
@@ -48,3 +49,7 @@
     {view.submit_button}
   </button>
 </form>
+
+{#each view.hints as hint}
+  <Hint {hint} {disabled} widget={id} on:action />
+{/each}

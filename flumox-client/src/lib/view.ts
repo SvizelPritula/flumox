@@ -5,7 +5,24 @@ export interface PromptView {
     prompt: string,
     submit_button: string,
     disabled: boolean,
+    hints: Hint[]
 }
+
+export type Hint = {
+    ident: string,
+    name: string,
+} & ({
+    state: "unknown"
+} | {
+    state: "future",
+    time: string
+} | {
+    state: "available",
+    button: string
+} | {
+    state: "taken",
+    content: string[]
+})
 
 export interface TextView {
     type: "text",

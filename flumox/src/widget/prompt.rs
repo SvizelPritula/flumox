@@ -1,10 +1,11 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
+use time_expr::{EvalError, Value};
 
 use crate::{
-    action::{ActionContext, ActionEffect, Answer},
+    action::{ActionContext, ActionEffect, Answer, Hint},
     error::{ActionResult, ViewResult},
     expr::{Environment, Expr},
     solution::Solution,
@@ -18,6 +19,8 @@ pub struct Config {
     style: Style,
     solutions: Vec<Solution>,
     visible: Expr,
+    #[serde(default)]
+    hints: Vec<HintConfig>,
     on_solution_correct: Option<String>,
     on_solution_incorrect: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,6 +30,7 @@ pub struct Config {
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct State {
     solved: Option<SolutionDetails>,
+    hints: HashMap<String, OffsetDateTime>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -34,6 +38,7 @@ pub struct View {
     #[serde(flatten)]
     style: Style,
     disabled: bool,
+    hints: Vec<HintView>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -51,6 +56,41 @@ struct SolutionDetails {
     canonical_text: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct HintConfig {
+    ident: String,
+    name: String,
+    content: Vec<String>,
+    available: Expr,
+    visible: Expr,
+    take_button: String,
+    on_hint_taken: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+struct HintView {
+    ident: String,
+    name: String,
+    #[serde(flatten)]
+    state: HintStateView,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "state")]
+enum HintStateView {
+    Unknown,
+    Future {
+        #[serde(with = "time::serde::rfc3339")]
+        time: OffsetDateTime,
+    },
+    Available {
+        button: String,
+    },
+    Taken {
+        content: Vec<String>,
+    },
+}
+
 impl Config {
     pub fn default_state(&self) -> State {
         State::default()
@@ -60,22 +100,84 @@ impl Config {
         match *path {
             ["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
             ["visible"] => env.eval(&self.visible),
+            ["hint", hint, "available"] => self
+                .hints
+                .iter()
+                .find(|h| h.ident == hint)
+                .ok_or_else(|| env.unknown_path(path))
+                .and_then(|h| env.eval(&h.available)),
+            ["hint", hint, "visible"] => self
+                .hints
+                .iter()
+                .find(|h| h.ident == hint)
+                .ok_or_else(|| env.unknown_path(path))
+                .and_then(|h| env.eval(&h.visible)),
+            ["hint", hint, "taken"] => state
+                .hints
+                .get(hint)
+                .map(|time| Ok(Value::Since(*time)))
+                .unwrap_or(Ok(Value::Never)),
             _ => Err(env.unknown_path(path)),
         }
     }
 
     pub fn view(&self, state: &State, mut ctx: ViewContext) -> ViewResult<View> {
-        let visible = ctx.env.own(&["visible"])?;
+        let visible = ctx.env.eval(&self.visible)?;
         let visible = ctx.time.if_after(visible);
 
         if !visible {
             return Ok(None);
         }
 
+        let mut hints = Vec::new();
+
+        for hint in &self.hints {
+            if !ctx.time.if_after(ctx.env.eval(&hint.visible)?) {
+                continue;
+            }
+
+            let state = if state.hints.contains_key(&hint.ident) {
+                HintStateView::Taken {
+                    content: hint.content.clone(),
+                }
+            } else {
+                let available_time = ctx.env.eval(&hint.available)?;
+
+                match available_time {
+                    Value::Always => HintStateView::Available {
+                        button: hint.take_button.to_owned(),
+                    },
+                    Value::Since(time) => {
+                        if ctx.time.if_after(available_time) {
+                            HintStateView::Available {
+                                button: hint.take_button.to_owned(),
+                            }
+                        } else {
+                            HintStateView::Future { time }
+                        }
+                    }
+                    Value::Never => HintStateView::Unknown,
+                }
+            };
+
+            hints.push(HintView {
+                ident: hint.ident.to_owned(),
+                name: hint.name.to_owned(),
+                state,
+            });
+        }
+
         Ok(Some(View {
             style: self.style.clone(),
             disabled: state.solved.is_some(),
+            hints,
         }))
+    }
+
+    fn active(&self, state: &State, ctx: &mut ActionContext) -> Result<bool, EvalError> {
+        let visible = ctx.env.eval(&self.visible)?;
+        let visible = visible.to_bool(ctx.time);
+        Ok(visible & state.solved.is_none())
     }
 
     pub fn submit_answer(
@@ -84,11 +186,7 @@ impl Config {
         action: &Answer,
         mut ctx: ActionContext,
     ) -> ActionResult<State> {
-        let visible = ctx.env.own(&["visible"])?;
-        let visible = visible.to_bool(ctx.time);
-        let active = visible & state.solved.is_none();
-
-        if !active {
+        if !self.active(state, &mut ctx)? {
             return Err(ActionError::NotPossible);
         }
 
@@ -141,5 +239,47 @@ impl Config {
                     .map(|text| Toast::new(text, ToastType::Danger)),
             ))
         }
+    }
+
+    pub fn take_hint(
+        &self,
+        state: &State,
+        action: &Hint,
+        mut ctx: ActionContext,
+    ) -> ActionResult<State> {
+        if !self.active(state, &mut ctx)? {
+            return Err(ActionError::NotPossible);
+        }
+
+        let ident = &action.ident;
+
+        let Some(hint) = self.hints.iter().find(|h| *h.ident == *ident) else {
+            return Err(ActionError::UnknownIdent);
+        };
+
+        let visible = ctx.env.eval(&hint.visible)?;
+        let visible = visible.to_bool(ctx.time);
+
+        let available = ctx.env.eval(&hint.available)?;
+        let available = available.to_bool(ctx.time);
+
+        if !visible || !available {
+            return Err(ActionError::NotPossible);
+        }
+
+        if state.hints.contains_key(ident) {
+            return Err(ActionError::NotPossible);
+        }
+
+        let mut state = state.clone();
+
+        state.hints.insert(ident.to_owned(), ctx.time);
+
+        Ok(ActionEffect::new(
+            Some(state),
+            hint.on_hint_taken
+                .clone()
+                .map(|text| Toast::new(text, ToastType::Success)),
+        ))
     }
 }

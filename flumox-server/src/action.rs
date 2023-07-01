@@ -60,12 +60,12 @@ pub async fn submit_action(
         let (ident, _) = meta
             .iter()
             .find(|(_, meta)| meta.id == widget)
-            .ok_or(ActionError::UnknownWidget)?;
+            .ok_or(ActionError::UnknownIdent)?;
 
         let instance = game_state
             .instances
             .get(ident)
-            .ok_or(ActionError::UnknownWidget)?;
+            .ok_or(ActionError::UnknownIdent)?;
 
         let mut cache = Cache::default();
         let env = Environment::new(&game_state, &mut cache, ident);
@@ -92,7 +92,7 @@ pub async fn submit_action(
                 break Ok(SubmissionResponse::NotPossible)
             }
             Err(ProcessActionError::Action(
-                ActionError::UnknownWidget | ActionError::WidgetMismatch,
+                ActionError::UnknownIdent | ActionError::WidgetMismatch,
             )) => {
                 break Ok(SubmissionResponse::DispatchFailed);
             }
