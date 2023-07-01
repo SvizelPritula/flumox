@@ -47,7 +47,14 @@ pub async fn load_state(
         metadata.insert(ident, InstanceMetadata { id });
     }
 
-    Ok((GameState { instances }, metadata))
+    const LOAD_TEAM: &str = "SELECT attributes FROM team WHERE game=$1 AND id=$2";
+
+    let statement = db.prepare_cached(LOAD_TEAM).await?;
+    let row = db.query_one(&statement, &[&game, &team]).await?;
+
+    let Json(team) = row.try_get(0)?;
+
+    Ok((GameState { instances, team }, metadata))
 }
 
 pub async fn set_state(

@@ -11,6 +11,7 @@ CREATE TABLE public.team
     id uuid NOT NULL,
     name text NOT NULL,
     access_code text NOT NULL,
+    attributes jsonb NOT NULL,
     PRIMARY KEY (game, id),
     FOREIGN KEY (game)
         REFERENCES public.game (id) MATCH SIMPLE

@@ -2,10 +2,10 @@ INSERT INTO game (id, name)
 VALUES
     ('00000000-0000-0000-0000-000000000000', 'Sample');
 
-INSERT INTO team (game, id, name, access_code)
+INSERT INTO team (game, id, name, access_code, attributes)
 VALUES
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Team Great', 'great'),
-    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'Team Awesome', 'awesome');
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'Team Great', 'great', '{"bad": "always"}'),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'Team Awesome', 'awesome', '{"bad": "never"}');
 
 INSERT INTO widget (game, id, ident, priority, config)
 VALUES
@@ -14,6 +14,18 @@ VALUES
         "heading": "Intro",
         "content": ["Welcome!"],
         "visible": "always"
+    }'),
+    ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000006', 'zero', 5, '{
+        "type": "prompt",
+        "name": "Start",
+        "details": ["This is here only to start timers."],
+        "prompt": "Enter \"ok\":",
+        "submit_button": "Start",
+        "solutions": [
+            {"type": "alphanumeric", "solution": "ok"}
+        ],
+        "visible": "always",
+        "on_solution_incorrect": "Wrong solution."
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000001', 'first', 10, '{
         "type": "prompt",
@@ -25,7 +37,7 @@ VALUES
             {"type": "alphanumeric", "solution": "first"},
             {"type": "number", "solution": 1}
         ],
-        "visible": "2022-01-01 12:00 +2",
+        "visible": "zero.solved",
         "on_solution_correct": "Yup!",
         "on_solution_incorrect": "Nope!",
         "hints": [
@@ -33,7 +45,7 @@ VALUES
                 "ident": "simple",
                 "name": "Simple hint",
                 "content": ["Try to solve the cipher.", "It might help."],
-                "available": "this.visible + 15s",
+                "available": "(this.visible + 30 s) | team.bad",
                 "visible": "always",
                 "take_button": "Take",
                 "on_hint_taken": "Hint taken."

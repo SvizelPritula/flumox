@@ -79,21 +79,25 @@ impl<'a> Environment<'a> {
     }
 
     fn resolve_raw(&mut self, module: &str, path: &[&str], path_str: &str) -> EvalResult {
-        let instance = self
-            .game
-            .instances
-            .get(module)
-            .ok_or(EvalError::UnknownPath {
-                path: path_str.into(),
-            })?;
-
-        let context = Environment {
+        let env = Environment {
             cache: self.cache,
             this: Some(module),
             game: self.game,
         };
 
-        instance.resolve(path, context)
+        if module == "team" {
+            self.game.team.resolve(path, env)
+        } else {
+            let instance = self
+                .game
+                .instances
+                .get(module)
+                .ok_or(EvalError::UnknownPath {
+                    path: path_str.into(),
+                })?;
+
+            instance.resolve(path, env)
+        }
     }
 
     pub fn own(&mut self, path: &[&str]) -> EvalResult {

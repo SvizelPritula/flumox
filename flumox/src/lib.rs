@@ -1,4 +1,5 @@
 mod action;
+mod attributes;
 mod error;
 mod expr;
 mod game;
