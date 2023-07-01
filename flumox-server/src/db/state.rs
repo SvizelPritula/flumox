@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use deadpool_postgres::Transaction;
-use flumox::{Config, GameState, State, StateMismatchError};
+use flumox::{Action, Config, GameState, State, StateMismatchError};
 use indexmap::IndexMap;
 use thiserror::Error;
+use time::OffsetDateTime;
 use tokio_postgres::{types::Json, Error};
 use uuid::Uuid;
 
@@ -76,6 +77,32 @@ pub async fn set_state(
         .await?;
 
     invalidate(db, InvalidateMessage::Team { game, team }).await?;
+
+    Ok(())
+}
+
+pub async fn add_action(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+    team: Uuid,
+    widget: Uuid,
+    time: OffsetDateTime,
+    action: &Action,
+) -> Result<(), Error> {
+    const SET_STATE: &str = concat!(
+        "INSERT INTO action (id, game, team, widget, time, payload) ",
+        "VALUES ($1, $2, $3, $4, $5, $6)"
+    );
+
+    let id = Uuid::new_v4();
+
+    let statement = db.prepare_cached(SET_STATE).await?;
+
+    db.execute(
+        &statement,
+        &[&id, &game, &team, &widget, &time, &Json(action)],
+    )
+    .await?;
 
     Ok(())
 }

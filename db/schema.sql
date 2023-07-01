@@ -54,7 +54,6 @@ CREATE TABLE public.state
         REFERENCES public.widget (game, id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
-        NOT VALID
 );
 
 CREATE TABLE public.session
@@ -67,6 +66,29 @@ CREATE TABLE public.session
     PRIMARY KEY (id),
     FOREIGN KEY (game, team)
         REFERENCES public.team (game, id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE
+);
+
+CREATE TABLE public.action
+(
+    id uuid NOT NULL,
+    game uuid NOT NULL,
+    team uuid NOT NULL,
+    widget uuid NOT NULL,
+    time timestamp with time zone NOT NULL,
+    payload jsonb NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (game)
+        REFERENCES public.game (id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (game, team)
+        REFERENCES public.team (game, id) MATCH SIMPLE
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    FOREIGN KEY (game, widget)
+        REFERENCES public.widget (game, id) MATCH SIMPLE
         ON UPDATE CASCADE
         ON DELETE CASCADE
 );

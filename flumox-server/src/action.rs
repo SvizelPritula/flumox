@@ -13,7 +13,7 @@ use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::{
-    db::{load_state, set_state, LoadStateError},
+    db::{add_action, load_state, set_state, LoadStateError},
     error::InternalError,
 };
 
@@ -76,6 +76,8 @@ pub async fn submit_action(
         if let Some(state) = new_state {
             set_state(&mut db, game, team, widget, state).await?;
         }
+
+        add_action(&mut db, game, team, widget, time, action).await?;
 
         db.commit().await?;
 
