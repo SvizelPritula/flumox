@@ -44,7 +44,8 @@ export default defineConfig(async (mode) => {
         injectRegister: null,
         filename: "worker.js",
         workbox: {
-          inlineWorkboxRuntime: true
+          inlineWorkboxRuntime: true,
+          navigateFallback: null
         },
         manifest
       }),
