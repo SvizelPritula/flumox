@@ -41,6 +41,9 @@ struct Options {
     /// A directory to serve at server root
     #[arg(long)]
     serve: Option<PathBuf>,
+    /// Whether to use ANSI codes in output
+    #[arg(long, default_value_t = true, env = "LOG_COLOR")]
+    color: bool,
 }
 
 fn connect_db(config: Config) -> Result<Pool> {
@@ -78,7 +81,10 @@ fn start_message_listener(config: Config) -> Channels {
 async fn main() -> Result<()> {
     let options = Options::parse();
 
-    let stdout = fmt::layer().compact().with_filter(LevelFilter::INFO);
+    let stdout = fmt::layer()
+        .with_ansi(options.color)
+        .with_filter(LevelFilter::INFO);
+
     registry().with(stdout).init();
 
     let pool = connect_db(options.db.clone())?;

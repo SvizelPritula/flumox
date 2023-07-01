@@ -9,7 +9,7 @@ use thiserror::Error;
 use time::OffsetDateTime;
 use tokio::time::sleep;
 use tokio_postgres::{error::SqlState, IsolationLevel};
-use tracing::warn;
+use tracing::{info, warn};
 use uuid::Uuid;
 
 use crate::{
@@ -84,6 +84,8 @@ pub async fn submit_action(
 
     let time = OffsetDateTime::now_utc();
     let mut retries = RETRY_DURATIONS.iter().copied();
+
+    info!(%game, %team, %time, %widget, ?action, "Action submitted");
 
     loop {
         match run(db, game, team, widget, &action, time).await {
