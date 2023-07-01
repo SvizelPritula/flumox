@@ -1,7 +1,10 @@
 use std::{collections::HashMap, hash::Hash, mem::ManuallyDrop, sync::Arc};
 
 use parking_lot::{RwLock, RwLockUpgradableReadGuard};
-use tokio::sync::broadcast::{self, error::RecvError};
+use tokio::sync::broadcast::{
+    self,
+    error::{RecvError, TryRecvError},
+};
 
 #[derive(Debug)]
 struct Inner<K, M> {
@@ -65,6 +68,10 @@ impl<K: Hash + Eq, M: Clone> Receiver<K, M> {
     pub async fn recv(&mut self) -> Result<M, RecvError> {
         self.inner.recv().await
     }
+
+    pub fn try_recv(&mut self) -> Result<M, TryRecvError> {
+        self.inner.try_recv()
+    }
 }
 
 impl<K: Eq + Hash, M> Drop for Receiver<K, M> {
@@ -95,5 +102,71 @@ impl<K, M> Clone for ChannelMap<K, M> {
         Self {
             inner: self.inner.clone(),
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use tokio::sync::broadcast::error::TryRecvError;
+
+    use crate::ChannelMap;
+
+    #[test]
+    fn send_to_correct_key() {
+        let map: ChannelMap<i32, i32> = ChannelMap::new(16);
+        let mut sub = map.subscribe(10);
+
+        map.send(&10, 42);
+
+        assert_eq!(sub.try_recv(), Ok(42));
+    }
+
+    #[test]
+    fn dont_send_to_incorrect_key() {
+        let map: ChannelMap<i32, i32> = ChannelMap::new(16);
+        let mut ten = map.subscribe(10);
+        let mut _twenty = map.subscribe(20);
+
+        map.send(&20, 42);
+
+        assert_eq!(ten.try_recv(), Err(TryRecvError::Empty));
+    }
+
+    #[test]
+    fn send_to_multiple() {
+        let map: ChannelMap<i32, i32> = ChannelMap::new(16);
+        let mut a = map.subscribe(10);
+        let mut b = map.subscribe(10);
+
+        map.send(&10, 42);
+
+        assert_eq!(a.try_recv(), Ok(42));
+        assert_eq!(b.try_recv(), Ok(42));
+    }
+
+    #[test]
+    fn closes_unneeded_channels() {
+        let map: ChannelMap<i32, i32> = ChannelMap::new(16);
+
+        {
+            let _a = map.subscribe(0);
+            let _b = map.subscribe(0);
+            let _c = map.subscribe(0);
+        }
+
+        assert!(!map.inner.read().map.contains_key(&0));
+    }
+
+    #[test]
+    fn keeps_unneeded_channels() {
+        let map: ChannelMap<i32, i32> = ChannelMap::new(16);
+
+        {
+            let _a = map.subscribe(0);
+            let _b = map.subscribe(0);
+        }
+        let _c = map.subscribe(0);
+
+        assert!(map.inner.read().map.contains_key(&0));
     }
 }
