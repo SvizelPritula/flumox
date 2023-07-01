@@ -25,7 +25,9 @@ VALUES
             {"type": "alphanumeric", "solution": "first"},
             {"type": "number", "solution": 1}
         ],
-        "visible": "2022-01-01 12:00 +2"
+        "visible": "2022-01-01 12:00 +2",
+        "on_solution_correct": "Yup!",
+        "on_solution_incorrect": "Nope!"
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000002', 'move', 15, '{
         "type": "text",
@@ -43,7 +45,8 @@ VALUES
             {"type": "alphanumeric", "solution": "second"},
             {"type": "alphanumeric", "solution": "two"}
         ],
-        "visible": "first.solved"
+        "visible": "first.solved",
+        "on_solution_incorrect": "Wrong solution."
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000004', 'third', 30, '{
         "type": "prompt",
@@ -54,7 +57,8 @@ VALUES
         "solutions": [
             {"type": "alphanumeric", "solution": "one two three"}
         ],
-        "visible": "(second.visible + 15 s) | second.solved"
+        "visible": "(second.visible + 15 s) | second.solved",
+        "on_solution_incorrect": "Wrong solution."
     }'),
     ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000005', 'countdown', 40, '{
         "type": "countdown",

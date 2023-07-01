@@ -45,9 +45,9 @@ impl<S> ActionEffect<S> {
         }
     }
 
-    pub fn with_toast(toast: Toast) -> Self {
+    pub fn with_toast(toast: Option<Toast>) -> Self {
         Self {
-            toast: Some(toast),
+            toast: toast,
             new_state: None,
         }
     }

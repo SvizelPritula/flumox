@@ -16,6 +16,8 @@ pub struct Config {
     style: Style,
     solutions: Vec<Solution>,
     visible: Expr,
+    on_solution_correct: Option<String>,
+    on_solution_incorrect: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -96,16 +98,16 @@ impl Config {
 
             Ok(ActionEffect::new(
                 Some(state),
-                Some(Toast::new(
-                    "Solution correct".to_owned(),
-                    ToastType::Success,
-                )),
+                self.on_solution_correct
+                    .clone()
+                    .map(|text| Toast::new(text, ToastType::Success)),
             ))
         } else {
-            Ok(ActionEffect::with_toast(Toast::new(
-                "Solution incorrect".to_owned(),
-                ToastType::Danger,
-            )))
+            Ok(ActionEffect::with_toast(
+                self.on_solution_incorrect
+                    .clone()
+                    .map(|text| Toast::new(text, ToastType::Danger)),
+            ))
         }
     }
 }

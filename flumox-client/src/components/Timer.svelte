@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
 
-  export let time: string | Date | null;
+  export let time: string | null;
 
   let callback: number | null = null;
 
@@ -14,7 +14,7 @@
     indeterminate = time == null;
     if (indeterminate) return;
 
-    let target = typeof time == "string" ? Date.parse(time) : time.valueOf();
+    let target = Date.parse(time);
     let now = Date.now();
 
     let value = Math.max(target - now, 0);
