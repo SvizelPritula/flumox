@@ -42,9 +42,10 @@ VALUES
         "prompt": "Answer:",
         "submit_button": "Submit",
         "solutions": [
-            {"type": "alphanumeric", "solution": "second"},
+            {"type": "alphanumeric", "solution": "one"},
             {"type": "alphanumeric", "solution": "two"}
         ],
+        "solution_exclusion_group": "main",
         "visible": "first.solved",
         "on_solution_incorrect": "Wrong solution."
     }'),
@@ -55,8 +56,10 @@ VALUES
         "prompt": "Answer:",
         "submit_button": "Submit",
         "solutions": [
-            {"type": "alphanumeric", "solution": "one two three"}
+            {"type": "alphanumeric", "solution": "one"},
+            {"type": "alphanumeric", "solution": "two"}
         ],
+        "solution_exclusion_group": "main",
         "visible": "(second.visible + 15 s) | second.solved",
         "on_solution_incorrect": "Wrong solution."
     }'),

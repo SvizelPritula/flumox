@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 
@@ -7,7 +9,7 @@ use crate::{
     expr::{Environment, Expr},
     solution::Solution,
     view_context::ViewContext,
-    ActionError, EvalResult, Toast, ToastType,
+    ActionError, EvalResult, Instance, Toast, ToastType,
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -18,6 +20,8 @@ pub struct Config {
     visible: Expr,
     on_solution_correct: Option<String>,
     on_solution_incorrect: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    solution_exclusion_group: Option<String>,
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
@@ -88,12 +92,40 @@ impl Config {
             return Err(ActionError::NotPossible);
         }
 
+        let mut banned = HashSet::new();
+
+        if let Some(group) = self.solution_exclusion_group.as_ref() {
+            for instance in ctx.env.game.instances.values() {
+                if let Instance::Prompt(config, state) = instance {
+                    if config
+                        .solution_exclusion_group
+                        .as_ref()
+                        .is_some_and(|g| g == group)
+                    {
+                        if let Some(solution) = &state.solved {
+                            banned.insert(solution.canonical_text.as_str());
+                        }
+                    }
+                }
+            }
+        }
+
         if let Some(solution) = self.solutions.iter().find(|s| s.check(&action.answer)) {
+            let canonical_text = solution.to_string();
+
+            if banned.contains(canonical_text.as_str()) {
+                return Ok(ActionEffect::with_toast(
+                    self.on_solution_incorrect
+                        .clone()
+                        .map(|text| Toast::new(text, ToastType::Danger)),
+                ));
+            }
+
             let mut state = state.clone();
 
             state.solved = Some(SolutionDetails {
                 time: ctx.time,
-                canonical_text: solution.to_string(),
+                canonical_text,
             });
 
             Ok(ActionEffect::new(
