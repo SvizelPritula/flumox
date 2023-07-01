@@ -23,6 +23,7 @@ COPY flumox-client/*.json flumox-client/*.js flumox-client/*.ts ./
 RUN npm ci --no-audit --no-fund
 
 COPY flumox-client/src/ ./src/
+COPY flumox-client/public/ ./public/
 COPY flumox-client/index.html ./
 
 RUN npm run build

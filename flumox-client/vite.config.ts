@@ -47,6 +47,7 @@ export default defineConfig(async (mode) => {
           inlineWorkboxRuntime: true,
           navigateFallback: null
         },
+        includeAssets: ["icons/icon.svg"],
         manifest
       }),
       minifyHtml(),
