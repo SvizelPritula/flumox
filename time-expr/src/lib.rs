@@ -17,3 +17,6 @@ where
     let ast = parse(expr)?;
     ast.eval(resolver)
 }
+
+#[cfg(test)]
+mod test;
