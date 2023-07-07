@@ -14,6 +14,8 @@ export default defineConfig(async (mode) => {
     name: translations.appName,
     short_name: translations.appName,
     description: translations.appDescription,
+    categories: ["puzzle", "game", "outdoors"],
+    display: 'standalone',
     theme_color: "#262626",
     background_color: "#0d0d0d",
     lang: language,
