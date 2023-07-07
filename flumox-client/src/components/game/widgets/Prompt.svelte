@@ -11,7 +11,7 @@
 
   let answer = "";
 
-  $: formDisabled = disabled || view.disabled;
+  $: formDisabled = disabled || view.solved != null;
 
   const dispatch = createEventDispatcher<{ action: Action }>();
 
@@ -36,13 +36,23 @@
   <label class={label}>
     <div>{view.prompt}</div>
 
-    <input
-      bind:value={answer}
-      type="text"
-      autocomplete="off"
-      disabled={formDisabled}
-      class={input}
-    />
+    {#if view.solved == null}
+      <input
+        bind:value={answer}
+        type="text"
+        autocomplete="off"
+        disabled={formDisabled}
+        class={input}
+      />
+    {:else}
+      <input
+        value={view.solved}
+        type="text"
+        autocomplete="off"
+        disabled={true}
+        class={input}
+      />
+    {/if}
   </label>
 
   <button type="submit" disabled={formDisabled} class={button}>

@@ -37,7 +37,7 @@ pub struct State {
 pub struct View {
     #[serde(flatten)]
     style: Style,
-    disabled: bool,
+    solved: Option<String>,
     hints: Vec<HintView>,
 }
 
@@ -171,7 +171,7 @@ impl Config {
 
         Ok(Some(View {
             style: self.style.clone(),
-            disabled: solved,
+            solved: state.solved.as_ref().map(|s| s.canonical_text.clone()),
             hints,
         }))
     }
