@@ -19,6 +19,11 @@ export default defineConfig(async (mode) => {
     lang: language,
     icons: [
       {
+        "src": "/icons/icon.svg",
+        "sizes": "any",
+        "type": "image/svg+xml"
+      },
+      {
         "src": "/icons/192x192.png",
         "sizes": "192x192",
         "type": "image/png"
@@ -27,6 +32,24 @@ export default defineConfig(async (mode) => {
         "src": "/icons/512x512.png",
         "sizes": "512x512",
         "type": "image/png"
+      },
+      {
+        "src": "/icons/maskable.svg",
+        "sizes": "any",
+        "type": "image/svg+xml",
+        "purpose": "maskable"
+      },
+      {
+        "src": "/icons/maskable-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png",
+        "purpose": "maskable"
+      },
+      {
+        "src": "/icons/maskable-512x512.png",
+        "sizes": "512x512",
+        "type": "image/png",
+        "purpose": "maskable"
       }
     ],
   };
@@ -47,7 +70,8 @@ export default defineConfig(async (mode) => {
           inlineWorkboxRuntime: true,
           navigateFallback: null
         },
-        includeAssets: ["icons/icon.svg"],
+        includeAssets: ["icons/icon.svg", "icons/maskable.svg"],
+        includeManifestIcons: false,
         manifest
       }),
       minifyHtml(),
