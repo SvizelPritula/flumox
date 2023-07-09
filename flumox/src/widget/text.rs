@@ -41,17 +41,14 @@ impl Config {
     }
 
     pub fn view(&self, _state: &State, mut ctx: ViewContext) -> ViewResult<View> {
-        let visible = ctx.env.eval(&self.visible)?;
-        let visible = ctx.time.if_after(visible);
-
-        let obsolete = ctx.env.eval(&self.obsolete)?;
-        let obsolete = ctx.time.if_after(obsolete);
+        let visible = ctx.eval(&self.visible)?;
+        let obsolete = ctx.eval(&self.obsolete)?;
 
         if visible {
             Ok(Some(View {
                 heading: self.heading.clone(),
                 content: self.content.clone(),
-                obsolete
+                obsolete,
             }))
         } else {
             Ok(None)

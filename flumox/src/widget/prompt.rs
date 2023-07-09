@@ -128,11 +128,8 @@ impl Config {
     }
 
     pub fn view(&self, state: &State, mut ctx: ViewContext) -> ViewResult<View> {
-        let visible = ctx.env.eval(&self.visible)?;
-        let visible = ctx.time.if_after(visible);
-
-        let disabled = ctx.env.eval(&self.disabled)?;
-        let disabled = ctx.time.if_after(disabled);
+        let visible = ctx.eval(&self.visible)?;
+        let disabled = ctx.eval(&self.disabled)?;
 
         if !visible {
             return Ok(None);
@@ -143,7 +140,7 @@ impl Config {
         let mut hints = Vec::new();
 
         for hint in &self.hints {
-            if !solved && !ctx.time.if_after(ctx.env.eval(&hint.visible)?) {
+            if !solved && !ctx.eval(&hint.visible)? {
                 continue;
             }
 
@@ -159,7 +156,7 @@ impl Config {
                         button: hint.take_button.to_owned(),
                     },
                     Value::Since(time) => {
-                        if ctx.time.if_after(available_time) {
+                        if ctx.time.after(available_time) {
                             HintStateView::Available {
                                 button: hint.take_button.to_owned(),
                             }
@@ -187,11 +184,8 @@ impl Config {
     }
 
     fn active(&self, state: &State, ctx: &mut ActionContext) -> Result<bool, EvalError> {
-        let visible = ctx.env.eval(&self.visible)?;
-        let visible = visible.to_bool(ctx.time);
-
-        let disabled = ctx.env.eval(&self.disabled)?;
-        let disabled = disabled.to_bool(ctx.time);
+        let visible = ctx.eval(&self.visible)?;
+        let disabled = ctx.eval(&self.disabled)?;
 
         Ok(visible & state.solved.is_none() & !disabled)
     }

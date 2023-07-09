@@ -1,9 +1,9 @@
 use std::cmp::min;
 
 use time::OffsetDateTime;
-use time_expr::Value;
+use time_expr::{Value, EvalError};
 
-use crate::Environment;
+use crate::{Environment, expr::Expr};
 
 #[derive(Debug)]
 pub struct ViewContext<'a> {
@@ -14,6 +14,11 @@ pub struct ViewContext<'a> {
 impl<'a> ViewContext<'a> {
     pub fn new(env: Environment<'a>, tracker: &'a mut TimeTracker) -> ViewContext<'a> {
         ViewContext { time: tracker, env }
+    }
+
+    pub fn eval(&mut self, expr: &Expr) -> Result<bool, EvalError> {
+        let value = self.env.eval(expr)?;
+        Ok(self.time.after(value))
     }
 }
 
@@ -33,7 +38,7 @@ impl TimeTracker {
     }
 
     #[inline]
-    pub fn if_after(&mut self, time: Value) -> bool {
+    pub fn after(&mut self, time: Value) -> bool {
         match time {
             Value::Always => true,
             Value::Never => false,

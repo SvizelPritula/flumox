@@ -55,21 +55,20 @@ impl Config {
     }
 
     pub fn view(&self, _state: &State, mut ctx: ViewContext) -> ViewResult<View> {
-        let visible = ctx.env.own(&["visible"])?;
-        let visible = ctx.time.if_after(visible);
+        let visible = ctx.eval(&self.visible)?;
 
         if !visible {
             return Ok(None);
         }
 
-        let time = ctx.env.own(&["time"])?;
+        let time = ctx.env.eval(&self.time)?;
 
         let value = match &time {
             Value::Always => CountdownValue::Done {
                 text: self.done_text.clone(),
             },
             Value::Since(t) => {
-                if ctx.time.if_after(time) {
+                if ctx.time.after(time) {
                     CountdownValue::Done {
                         text: self.done_text.clone(),
                     }
