@@ -4,7 +4,8 @@ export interface PromptView {
     details: string[],
     prompt: string,
     submit_button: string,
-    solved: string | null,
+    disabled: boolean,
+    solution?: string,
     hints: Hint[]
 }
 

@@ -11,7 +11,17 @@ pub struct Expr(pub String);
 
 impl Default for Expr {
     fn default() -> Self {
-        Self(String::from("never"))
+        Expr::never()
+    }
+}
+
+impl Expr {
+    pub fn never() -> Self {
+        Expr(String::from("never"))
+    }
+
+    pub fn always() -> Self {
+        Expr(String::from("always"))
     }
 }
 

@@ -101,7 +101,8 @@ VALUES
         "name": "Bonus",
         "details": [
             "Je také možné řešit více šifer zároveň. Tato šifra je navíc bonusová, takže jí není nutné vyřešit k postupu.",
-            "Nápověda k tomuto bonusu je nastavená tak, aby se odemkla po dokončení šifrovačky."
+            "Nápověda k tomuto bonusu je nastavená tak, aby se odemkla po dokončení šifrovačky.",
+            "Po dokonční šifrovačky se bonus za půl minuty uzamkne"
         ],
         "prompt": "Řešení:",
         "submit_button": "Odeslat",
@@ -109,6 +110,7 @@ VALUES
             {"type": "alphanumeric", "solution": "mlha"}
         ],
         "visible": "start.solved",
+        "disabled": "outro.visible + 30s",
         "on_solution_correct": "Správně!",
         "on_solution_incorrect": "Špatné řešení.",
         "hints": [

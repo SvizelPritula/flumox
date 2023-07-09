@@ -11,7 +11,7 @@
 
   let answer = "";
 
-  $: formDisabled = disabled || view.solved != null;
+  $: formDisabled = disabled || view.disabled;
 
   const dispatch = createEventDispatcher<{ action: Action }>();
 
@@ -36,7 +36,7 @@
   <label class={label}>
     <div>{view.prompt}</div>
 
-    {#if view.solved == null}
+    {#if view.solution == null}
       <input
         bind:value={answer}
         type="text"
@@ -46,7 +46,7 @@
       />
     {:else}
       <input
-        value={view.solved}
+        value={view.solution}
         type="text"
         autocomplete="off"
         disabled={true}
@@ -61,5 +61,5 @@
 </form>
 
 {#each view.hints as hint}
-  <Hint {hint} {disabled} widget={id} on:action />
+  <Hint {hint} disabled={formDisabled} widget={id} on:action />
 {/each}

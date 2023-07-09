@@ -19,6 +19,8 @@ pub struct Config {
     style: Style,
     solutions: Vec<Solution>,
     visible: Expr,
+    #[serde(default = "Expr::never")]
+    disabled: Expr,
     #[serde(default)]
     hints: Vec<HintConfig>,
     on_solution_correct: Option<String>,
@@ -37,7 +39,9 @@ pub struct State {
 pub struct View {
     #[serde(flatten)]
     style: Style,
-    solved: Option<String>,
+    disabled: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    solution: Option<String>,
     hints: Vec<HintView>,
 }
 
@@ -62,6 +66,7 @@ struct HintConfig {
     name: String,
     content: Vec<String>,
     available: Expr,
+    #[serde(default = "Expr::always")]
     visible: Expr,
     take_button: String,
     on_hint_taken: Option<String>,
@@ -100,6 +105,7 @@ impl Config {
         match *path {
             ["solved"] => Ok(state.solved.as_ref().map(|s| s.time).into()),
             ["visible"] => env.eval(&self.visible),
+            ["disabled"] => env.eval(&self.disabled),
             ["hint", hint, "available"] => self
                 .hints
                 .iter()
@@ -124,6 +130,9 @@ impl Config {
     pub fn view(&self, state: &State, mut ctx: ViewContext) -> ViewResult<View> {
         let visible = ctx.env.eval(&self.visible)?;
         let visible = ctx.time.if_after(visible);
+
+        let disabled = ctx.env.eval(&self.disabled)?;
+        let disabled = ctx.time.if_after(disabled);
 
         if !visible {
             return Ok(None);
@@ -171,7 +180,8 @@ impl Config {
 
         Ok(Some(View {
             style: self.style.clone(),
-            solved: state.solved.as_ref().map(|s| s.canonical_text.clone()),
+            disabled: solved | disabled,
+            solution: state.solved.as_ref().map(|s| s.canonical_text.clone()),
             hints,
         }))
     }
@@ -179,7 +189,11 @@ impl Config {
     fn active(&self, state: &State, ctx: &mut ActionContext) -> Result<bool, EvalError> {
         let visible = ctx.env.eval(&self.visible)?;
         let visible = visible.to_bool(ctx.time);
-        Ok(visible & state.solved.is_none())
+
+        let disabled = ctx.env.eval(&self.disabled)?;
+        let disabled = disabled.to_bool(ctx.time);
+
+        Ok(visible & state.solved.is_none() & !disabled)
     }
 
     pub fn submit_answer(
