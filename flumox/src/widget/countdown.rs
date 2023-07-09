@@ -87,3 +87,9 @@ impl Config {
         }))
     }
 }
+
+impl View {
+    pub fn obsolete(&self) -> bool {
+        matches!(self.value, CountdownValue::Done { .. })
+    }
+}

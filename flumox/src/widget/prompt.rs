@@ -299,3 +299,9 @@ impl Config {
         ))
     }
 }
+
+impl View {
+    pub fn obsolete(&self) -> bool {
+        self.disabled
+    }
+}

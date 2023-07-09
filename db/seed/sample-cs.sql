@@ -12,7 +12,8 @@ VALUES
         "type": "text",
         "heading": "Něco ke hře",
         "content": ["Cílem této hry je představit webovou aplikaci Flumox. Řešení všech \"šifer\" v této hře najdete v textu."],
-        "visible": "always"
+        "visible": "always",
+        "obsolete": "to-start.solved"
     }'),
     ('f898f0d2-fb72-4046-a20b-7347a061b6a4', '4bcd62b0-c2ed-46f2-b3c5-5a324573372c', 'to-start', 10, '{
         "type": "prompt",

@@ -36,6 +36,8 @@ pub fn render(
         }
     }
 
+    result.sort_by_key(|w| w.view.obsolete());
+
     Ok(RenderResult {
         widgets: result,
         valid_until: tracker.valid_until(),
@@ -44,7 +46,7 @@ pub fn render(
 
 #[derive(Debug, Clone, Serialize)]
 pub struct WidgetInstanceDelta {
-    #[serde(skip_serializing_if="Option::is_none")]
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub view: Option<View>,
     pub id: Uuid,
 }

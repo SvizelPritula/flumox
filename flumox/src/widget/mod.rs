@@ -86,6 +86,16 @@ macro_rules! define_widgets {
                 Ok(view)
             }
         }
+
+        impl View {
+            pub fn obsolete(&self) -> bool {
+                match self {
+                    $(
+                        View::$type(v) => v.obsolete(),
+                    )*
+                }
+            }
+        }
     };
 }
 
