@@ -4,7 +4,11 @@ VALUES
 
 INSERT INTO team (game, id, name, access_code, attributes)
 VALUES
-    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', '37f38c56-7bde-4fc5-b322-83eff8801dd8', 'Kyborgové', 'absurd-opportunity', '{}');
+    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', '37f38c56-7bde-4fc5-b322-83eff8801dd8', 'Kyborgové 1', 'absurd-opportunity-1', '{}'),
+    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', '7c29794a-1ce3-4daf-9e2c-ac38d26ada81', 'Kyborgové 2', 'absurd-opportunity-2', '{}'),
+    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', 'dc4d3aec-e341-4603-b418-04a15a4b8be9', 'Kyborgové 3', 'absurd-opportunity-3', '{}'),
+    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', '2e5db16d-74c3-4e7a-8ab7-5a2194140a2b', 'Kyborgové 4', 'absurd-opportunity-4', '{}'),
+    ('f898f0d2-fb72-4046-a20b-7347a061b6a4', 'b4ca5939-b5ef-4e1c-88d9-0c0272377f7a', 'Kyborgové 5', 'absurd-opportunity-5', '{}');
 
 INSERT INTO widget (game, id, ident, priority, config)
 VALUES
