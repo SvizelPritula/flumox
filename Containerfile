@@ -8,6 +8,7 @@ COPY channel-map/ ./channel-map/
 COPY time-expr/ ./time-expr/
 COPY flumox/ ./flumox/
 COPY flumox-server/ ./flumox-server/
+COPY flumox-game-tracker/ ./flumox-game-tracker/
 COPY Cargo.toml Cargo.lock ./
 
 RUN [ "cargo", "build", "--release", "--bin", "flumox-server" ]

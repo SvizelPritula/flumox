@@ -1,0 +1,27 @@
+FROM docker.io/library/rust:1.70-alpine3.18 AS cargo
+
+RUN apk add --no-cache musl-dev
+
+WORKDIR /usr/src/flumox
+
+COPY channel-map/ ./channel-map/
+COPY time-expr/ ./time-expr/
+COPY flumox/ ./flumox/
+COPY flumox-server/ ./flumox-server/
+COPY flumox-game-tracker/ ./flumox-game-tracker/
+COPY Cargo.toml Cargo.lock ./
+
+RUN [ "cargo", "build", "--release", "--bin", "flumox-game-tracker" ]
+
+RUN npm run build
+
+FROM docker.io/library/alpine:3.18 AS runtime
+
+RUN apk add --no-cache tini
+
+COPY --from=cargo /usr/src/flumox/target/release/flumox-game-tracker /usr/local/bin/
+
+ENV PORT=8000
+EXPOSE 8000
+
+ENTRYPOINT [ "tini", "flumox-game-tracker" ]
