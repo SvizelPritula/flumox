@@ -2,6 +2,7 @@
 name = "flumox-server"
 version = "0.1.0"
 edition = "2021"
+default-run = "flumox-server"
 
 [dependencies]
 anyhow = "1.0.71"

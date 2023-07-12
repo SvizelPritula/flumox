@@ -16,7 +16,7 @@ use crate::{
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     #[serde(flatten)]
-    style: Style,
+    pub style: Style,
     solutions: Vec<Solution>,
     visible: Expr,
     #[serde(default = "Expr::never")]
@@ -31,8 +31,8 @@ pub struct Config {
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct State {
-    solved: Option<SolutionDetails>,
-    hints: HashMap<String, OffsetDateTime>,
+    pub solved: Option<SolutionDetails>,
+    pub hints: HashMap<String, OffsetDateTime>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -46,18 +46,18 @@ pub struct View {
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct Style {
-    name: String,
+pub struct Style {
+    pub name: String,
     details: Vec<String>,
     prompt: String,
     submit_button: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-struct SolutionDetails {
+pub struct SolutionDetails {
     #[serde(with = "time::serde::rfc3339")]
-    time: OffsetDateTime,
-    canonical_text: String,
+    pub time: OffsetDateTime,
+    pub canonical_text: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
