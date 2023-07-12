@@ -148,15 +148,18 @@ pub async fn team(
                 h1 { (&team) }
 
                 h2 { "State" }
-                @for w in widgets {
+                @for w in &widgets {
                     @if let Some(state) = widget(&w.instance) {
                         (state)
                     }
                 }
 
                 h2 { "Actions" }
-                @for a in actions {
-                    (action(&a))
+                @for a in &actions {
+                    (action(a))
+                }
+                @if actions.len() == 0 {
+                    p { i { "None" } }
                 }
             ),
         ),
