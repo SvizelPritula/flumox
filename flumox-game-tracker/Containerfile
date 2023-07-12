@@ -13,8 +13,6 @@ COPY Cargo.toml Cargo.lock ./
 
 RUN [ "cargo", "build", "--release", "--bin", "flumox-game-tracker" ]
 
-RUN npm run build
-
 FROM docker.io/library/alpine:3.18 AS runtime
 
 RUN apk add --no-cache tini
