@@ -3,13 +3,13 @@ use axum::{
     http::StatusCode,
 };
 use deadpool_postgres::Pool;
-use flumox::Instance;
+use flumox::{Action, Instance};
 use maud::{html, Markup};
 use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db,
+    db::{self, ActionInfo},
     error::InternalError,
     parts::{not_found, page},
 };
@@ -91,8 +91,9 @@ pub async fn team(
     };
 
     let widgets = db::states(&mut client, path.game, path.team).await?;
+    let actions = db::actions(&mut client, path.game, path.team).await?;
 
-    fn state(state: &Instance) -> Option<Markup> {
+    fn widget(state: &Instance) -> Option<Markup> {
         match state {
             Instance::Prompt(config, state) => Some(html!(
                 h3 { (config.style.name) }
@@ -121,17 +122,41 @@ pub async fn team(
         }
     }
 
+    fn action(action: &ActionInfo) -> Markup {
+        html!(
+            p {
+                (action.time)
+                " "
+                b { (action.widget) }
+                ": "
+
+                @match &action.payload {
+                    Action::Answer(answer) => "Submitted answer " i { (answer.answer) },
+                    Action::Hint(hint) => "Taken hint " b { (hint.ident) },
+                    #[allow(unreachable_patterns)]
+                    _ => "Unknown action",
+                }
+            }
+        )
+    }
+
     Ok((
         StatusCode::OK,
         page(
             &team,
             html!(
                 h1 { (&team) }
+
                 h2 { "State" }
-                @for widget in widgets {
-                    @if let Some(state) = state(&widget.instance) {
+                @for w in widgets {
+                    @if let Some(state) = widget(&w.instance) {
                         (state)
                     }
+                }
+
+                h2 { "Actions" }
+                @for a in actions {
+                    (action(&a))
                 }
             ),
         ),

@@ -1,5 +1,6 @@
 use deadpool_postgres::Transaction;
-use flumox::{Config, State, Instance};
+use flumox::{Action, Config, Instance, State};
+use time::OffsetDateTime;
 use tokio_postgres::types::Json;
 use uuid::Uuid;
 
@@ -115,6 +116,44 @@ pub async fn states(
                 id,
                 ident,
                 instance,
+            })
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone)]
+pub struct ActionInfo {
+    pub widget: String,
+    pub time: OffsetDateTime,
+    pub payload: Action,
+}
+
+pub async fn actions(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+    team: Uuid,
+) -> Result<Vec<ActionInfo>, InternalError> {
+    const ACTIONS: &str = concat!(
+        "SELECT widget.ident, action.time, action.payload ",
+        "FROM action JOIN widget ",
+        "ON action.game=widget.game AND action.widget=widget.id ",
+        "WHERE action.game=$1 AND action.team=$2 ",
+        "ORDER BY action.time DESC"
+    );
+
+    let stmt = db.prepare_cached(ACTIONS).await?;
+    let team = db.query(&stmt, &[&game, &team]).await?;
+
+    team.into_iter()
+        .map(|r| {
+            let widget = r.try_get(0)?;
+            let time = r.try_get(1)?;
+            let Json(payload) = r.try_get(2)?;
+
+            Ok(ActionInfo {
+                widget,
+                time,
+                payload,
             })
         })
         .collect()
