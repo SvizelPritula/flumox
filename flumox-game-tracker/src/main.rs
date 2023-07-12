@@ -15,6 +15,7 @@ use deadpool_postgres::{Manager, Pool};
 use tokio_postgres::{Config, NoTls};
 use tower_http::{
     compression::CompressionLayer, set_header::SetResponseHeaderLayer, trace::TraceLayer,
+    validate_request::ValidateRequestHeaderLayer,
 };
 use tracing::info;
 use tracing_subscriber::{
@@ -33,12 +34,18 @@ struct State {
     db: Pool,
 }
 
-async fn serve(state: State, port: u16) -> Result<()> {
+async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()> {
     let app = Router::new()
         .route("/", get(routes::root))
         .route("/:game/", get(routes::game))
         .route("/:game/:team/", get(routes::team))
         .fallback(|| async { not_found("Page") });
+
+    let app = if let Some(creds) = creds {
+        app.layer(ValidateRequestHeaderLayer::basic(&creds.user, &creds.pass))
+    } else {
+        app
+    };
 
     let app = app
         .layer(CompressionLayer::new().deflate(true).gzip(true).br(true))
@@ -72,6 +79,12 @@ async fn serve(state: State, port: u16) -> Result<()> {
     Ok(())
 }
 
+#[derive(Debug, Clone)]
+struct Credentials {
+    user: String,
+    pass: String,
+}
+
 #[derive(Debug, Parser)]
 /// A server for hosting puzzle hunts
 struct Options {
@@ -85,6 +98,12 @@ struct Options {
         env = "PG_CONFIG"
     )]
     db: Config,
+    /// Protect server with HTTP Basic auth with this password
+    #[arg(long, env = "AUTH_PASS")]
+    pass: Option<String>,
+    /// Username for HTTP Basic auth, only used if password set
+    #[arg(long, default_value = "flumox", env = "AUTH_USER")]
+    user: String,
     /// Whether to use ANSI codes in output
     #[arg(long, default_value_t = true, env = "LOG_COLOR", action=ArgAction::Set)]
     color: bool,
@@ -108,8 +127,12 @@ async fn main() -> Result<()> {
     registry().with(stdout).init();
 
     let db = connect_db(options.db.clone())?;
-
     let state = State { db };
 
-    serve(state, options.port).await
+    let creds = options.pass.map(|pass| Credentials {
+        pass,
+        user: options.user,
+    });
+
+    serve(state, options.port, creds).await
 }
