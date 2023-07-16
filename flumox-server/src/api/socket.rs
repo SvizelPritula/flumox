@@ -192,7 +192,7 @@ pub async fn sync_socket(
         if let Err(error) = run(&mut socket, pool, channels).await {
             match &error {
                 RunSocketError::Internal(error) => {
-                    if let Ok(payload) = internal_error(&error) {
+                    if let Ok(payload) = internal_error(error) {
                         let _ = socket.send(payload).await;
                     }
                 }

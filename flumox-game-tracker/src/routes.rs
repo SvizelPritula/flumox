@@ -125,7 +125,7 @@ pub async fn team(
                     }
                 }
                 p { "Hints taken:" }
-                @if state.hints.len() > 0 {
+                @if !state.hints.is_empty() {
                     ul {
                         @for hint in state.hints.iter() {
                             li {
@@ -173,7 +173,7 @@ pub async fn team(
                 @for a in &actions {
                     (action(a))
                 }
-                @if actions.len() == 0 {
+                @if actions.is_empty() {
                     p { i { "None" } }
                 }
             ),
