@@ -4,7 +4,7 @@ use anyhow::Result;
 use axum::{
     extract::FromRef,
     http::{
-        header::{CACHE_CONTROL, REFERRER_POLICY, X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS},
+        header::{CACHE_CONTROL, REFERRER_POLICY, X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS, STRICT_TRANSPORT_SECURITY},
         HeaderValue,
     },
     routing::get,
@@ -64,6 +64,10 @@ async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()
         .layer(SetResponseHeaderLayer::if_not_present(
             REFERRER_POLICY,
             HeaderValue::from_static("strict-origin-when-cross-origin"),
+        ))
+        .layer(SetResponseHeaderLayer::if_not_present(
+            STRICT_TRANSPORT_SECURITY,
+            HeaderValue::from_static("max-age=36288000"),
         ))
         .layer(TraceLayer::new_for_http())
         .with_state(state);
