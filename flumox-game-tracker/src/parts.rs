@@ -1,4 +1,5 @@
 use axum::http::StatusCode;
+use flumox::Action;
 use maud::{html, Markup, DOCTYPE};
 
 pub fn page(title: &str, body: Markup) -> Markup {
@@ -28,4 +29,13 @@ pub fn not_found(what: &str) -> (StatusCode, Markup) {
             ),
         ),
     )
+}
+
+pub fn action_description(payload: &Action) -> Markup {
+    match payload {
+        Action::Answer(answer) => html!("Submitted answer " i { (answer.answer) }),
+        Action::Hint(hint) => html!("Taken hint " b { (hint.ident) }),
+        #[allow(unreachable_patterns)]
+        _ => html!("Unknown action"),
+    }
 }

@@ -3,15 +3,15 @@ use axum::{
     http::StatusCode,
 };
 use deadpool_postgres::Pool;
-use flumox::{Action, Instance};
+use flumox::Instance;
 use maud::{html, Markup};
 use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, ActionInfo},
+    db::{self, ActionInfo, RecentActionInfo},
     error::InternalError,
-    parts::{not_found, page},
+    parts::{action_description, not_found, page},
 };
 
 pub async fn root(State(pool): State<Pool>) -> Result<Markup, InternalError> {
@@ -53,6 +53,21 @@ pub async fn game(
     };
 
     let teams = db::teams(&mut client, path.game).await?;
+    let actions = db::recent_actions(&mut client, path.game).await?;
+
+    fn action(action: &RecentActionInfo) -> Markup {
+        html!(
+            p {
+                (action.time)
+                " "
+                b { (action.team) }
+                " - "
+                b { (action.widget) }
+                ": "
+                (action_description(&action.payload))
+            }
+        )
+    }
 
     Ok((
         StatusCode::OK,
@@ -60,11 +75,17 @@ pub async fn game(
             &game,
             html!(
                 h1 { (&game) }
+
                 h2 { "Teams" }
                 @for team in teams {
                     p {
                         a href={"/" (path.game) "/" (team.id) "/"} { (team.name) }
                     }
+                }
+
+                h2 { "Recent actions" }
+                @for a in &actions {
+                    (action(a))
                 }
             ),
         ),
@@ -129,13 +150,7 @@ pub async fn team(
                 " "
                 b { (action.widget) }
                 ": "
-
-                @match &action.payload {
-                    Action::Answer(answer) => "Submitted answer " i { (answer.answer) },
-                    Action::Hint(hint) => "Taken hint " b { (hint.ident) },
-                    #[allow(unreachable_patterns)]
-                    _ => "Unknown action",
-                }
+                (action_description(&action.payload))
             }
         )
     }

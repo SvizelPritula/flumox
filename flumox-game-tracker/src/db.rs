@@ -51,9 +51,9 @@ pub async fn teams(db: &mut Transaction<'_>, game: Uuid) -> Result<Vec<Team>, In
     const TEAMS: &str = "SELECT id, name FROM team WHERE game = $1";
 
     let stmt = db.prepare_cached(TEAMS).await?;
-    let games = db.query(&stmt, &[&game]).await?;
+    let teams = db.query(&stmt, &[&game]).await?;
 
-    games
+    teams
         .into_iter()
         .map(|r| {
             Ok(Team {
@@ -98,9 +98,9 @@ pub async fn states(
     );
 
     let stmt = db.prepare_cached(STATES).await?;
-    let team = db.query(&stmt, &[&game, &team]).await?;
+    let states = db.query(&stmt, &[&game, &team]).await?;
 
-    team.into_iter()
+    states.into_iter()
         .map(|r| {
             let id = r.try_get(0)?;
             let ident = r.try_get(1)?;
@@ -142,9 +142,9 @@ pub async fn actions(
     );
 
     let stmt = db.prepare_cached(ACTIONS).await?;
-    let team = db.query(&stmt, &[&game, &team]).await?;
+    let actions = db.query(&stmt, &[&game, &team]).await?;
 
-    team.into_iter()
+    actions.into_iter()
         .map(|r| {
             let widget = r.try_get(0)?;
             let time = r.try_get(1)?;
@@ -152,6 +152,50 @@ pub async fn actions(
 
             Ok(ActionInfo {
                 widget,
+                time,
+                payload,
+            })
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone)]
+pub struct RecentActionInfo {
+    pub widget: String,
+    pub team: String,
+    pub time: OffsetDateTime,
+    pub payload: Action,
+}
+
+pub async fn recent_actions(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+) -> Result<Vec<RecentActionInfo>, InternalError> {
+    const ACTIONS: &str = concat!(
+        "SELECT widget.ident, team.name, action.time, action.payload ",
+        "FROM action ",
+        "JOIN widget ",
+        "ON action.game=widget.game AND action.widget=widget.id ",
+        "JOIN team ",
+        "ON action.game=team.game AND action.team=team.id ",
+        "WHERE action.game=$1 ",
+        "ORDER BY action.time DESC ",
+        "LIMIT 30"
+    );
+
+    let stmt = db.prepare_cached(ACTIONS).await?;
+    let actions = db.query(&stmt, &[&game]).await?;
+
+    actions.into_iter()
+        .map(|r| {
+            let widget = r.try_get(0)?;
+            let team = r.try_get(1)?;
+            let time = r.try_get(2)?;
+            let Json(payload) = r.try_get(3)?;
+
+            Ok(RecentActionInfo {
+                widget,
+                team,
                 time,
                 payload,
             })
