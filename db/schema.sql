@@ -96,4 +96,7 @@ CREATE TABLE public.action
 CREATE INDEX widget_by_game ON widget (game);
 CREATE INDEX state_by_team ON state (game, team);
 CREATE INDEX team_by_access_code ON team (access_code);
+CREATE INDEX team_by_game ON team (game);
+CREATE INDEX action_by_team ON action (game, team);
+CREATE INDEX action_by_game_and_time ON action (game, time);
 CREATE INDEX session_by_token ON session (token) INCLUDE (game, team);
