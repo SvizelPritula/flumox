@@ -9,6 +9,7 @@ COPY time-expr/ ./time-expr/
 COPY flumox/ ./flumox/
 COPY flumox-server/ ./flumox-server/
 COPY flumox-game-tracker/ ./flumox-game-tracker/
+COPY flumox-seed-maker/ ./flumox-seed-maker/
 COPY Cargo.toml Cargo.lock ./
 
 RUN [ "cargo", "build", "--release", "--bin", "flumox-server" ]
