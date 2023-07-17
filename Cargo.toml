@@ -1,5 +1,12 @@
 [workspace]
-members = ["flumox", "flumox-server", "flumox-game-tracker", "time-expr", "channel-map"]
+members = [
+    "flumox",
+    "flumox-server",
+    "flumox-game-tracker",
+    "flumox-seed-maker",
+    "time-expr",
+    "channel-map",
+]
 
 [profile.release]
 lto = "fat"

@@ -1,0 +1,27 @@
+{
+  name: "Another sample game",
+  widgets: [
+    {
+      ident: "intro",
+      priority: 0,
+      config: {
+        type: "text",
+        heading: "How to play",
+        content: [
+          "Welcome! You will be using this web app to record your in-game progress. You can use this app to submit your answers and get hints.",
+          "Note that this is a progressive web app, meaning you should be able to install it on most platforms. You should also be able to view any information offline, but you will need an internet connection to submit anything.",
+        ],
+        visible: "always",
+      },
+    },
+  ],
+  teams: [
+    {
+      name: "Player",
+      access_code: "player",
+      attributes: {
+        tired: "2022-01-01 01:00 +0",
+      },
+    },
+  ],
+}

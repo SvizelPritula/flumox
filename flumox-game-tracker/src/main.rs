@@ -90,7 +90,7 @@ struct Credentials {
 }
 
 #[derive(Debug, Parser)]
-/// A server for hosting puzzle hunts
+/// A server for tracking teams progress in Flumox
 struct Options {
     /// The port to listen on
     #[arg(long, default_value_t = 8000, env)]
