@@ -3,7 +3,6 @@
   widgets: [
     {
       ident: "intro",
-      priority: 0,
       config: {
         type: "text",
         heading: "How to play",

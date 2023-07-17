@@ -27,7 +27,6 @@ where
 #[derive(Debug, Clone, Deserialize)]
 struct Widget {
     ident: String,
-    priority: i64,
     config: Value,
 }
 
@@ -58,10 +57,11 @@ struct Options {
 }
 
 impl Widget {
-    pub fn seed(&self, w: &mut impl Write, game: Uuid) -> Result<()> {
+    pub fn seed(&self, w: &mut impl Write, game: Uuid, index: usize) -> Result<()> {
         let id = Uuid::new_v4();
 
         let config = serde_json::to_string(&self.config)?;
+        let priority = i64::try_from(index * 100)?;
 
         writeln!(
             w,
@@ -69,7 +69,7 @@ impl Widget {
             Escape(game),
             Escape(id),
             Escape(&self.ident),
-            Escape(self.priority),
+            Escape(priority),
             Escape(config)
         )?;
 
@@ -108,8 +108,8 @@ impl Game {
             Escape(&self.name)
         )?;
 
-        for widget in &self.widgets {
-            widget.seed(w, id)?;
+        for (i, widget) in self.widgets.iter().enumerate() {
+            widget.seed(w, id, i)?;
         }
 
         for team in &self.teams {
