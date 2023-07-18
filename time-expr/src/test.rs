@@ -125,3 +125,25 @@ fn parens_two() {
     let value = eval("(never & never) | always", &mut EmptyResolver).unwrap();
     assert_eq!(value, Value::Always);
 }
+
+struct NeverResolver;
+
+impl Resolve for NeverResolver {
+    fn resolve(&mut self, path: &[&str]) -> Result<Value, EvalError> {
+        assert!(path.iter().all(|n| n.chars().all(|c| c.is_alphanumeric())));
+
+        Ok(Value::Never)
+    }
+}
+
+#[test]
+fn unicode() {
+    let value = eval("á ", &mut NeverResolver).unwrap();
+    assert_eq!(value, Value::Never);
+}
+
+#[test]
+fn unicode_continue() {
+    let value = eval("áá | b", &mut NeverResolver).unwrap();
+    assert_eq!(value, Value::Never);
+}

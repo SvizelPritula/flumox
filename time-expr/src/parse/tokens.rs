@@ -30,7 +30,7 @@ impl<'a> Iterator for Tokens<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         loop {
-            let Some((idx, (pos, c))) = self.chars.next() else {
+            let Some((pos, (idx, c))) = self.chars.next() else {
                 break None;
             };
 
@@ -61,7 +61,7 @@ impl<'a> Tokens<'a> {
         let mut result = first as u64 - '0' as u64;
 
         loop {
-            match self.chars.peek().map(|(_i, (_p, c))| c).copied() {
+            match self.chars.peek().map(|(_p, (_i, c))| c).copied() {
                 Some(c @ '0'..='9') => {
                     self.chars.next();
 
@@ -84,7 +84,7 @@ impl<'a> Tokens<'a> {
 
     fn parse_word(&mut self, start: usize) -> Token<'a> {
         loop {
-            if let Some((i, (_p, c))) = self.chars.peek().copied() {
+            if let Some((_p, (i, c))) = self.chars.peek().copied() {
                 if c.is_alphanumeric() || c == '-' || c == '_' {
                     self.chars.next();
                     continue;
