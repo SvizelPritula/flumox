@@ -43,7 +43,7 @@ pub enum CountdownValue {
 
 impl Config {
     pub fn default_state(&self) -> State {
-        State::default()
+        State
     }
 
     pub fn resolve(&self, _state: &State, path: &[&str], mut env: Environment) -> EvalResult {
