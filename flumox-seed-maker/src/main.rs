@@ -1,14 +1,15 @@
 use std::{
+    collections::HashSet,
     fmt::{Display, Formatter},
     fs::{self, File},
     io::{stdin, stdout, Read, Write},
     path::PathBuf,
 };
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use clap::Parser;
 use postgres_protocol::escape::escape_literal;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use uuid::Uuid;
 
@@ -54,6 +55,17 @@ struct Options {
     /// Output path (default stdout)
     #[arg(long, short)]
     output: Option<PathBuf>,
+    #[arg(long, short)]
+    game_id: Option<Uuid>,
+    /// Patch widget with a given ident
+    #[arg(long = "widget", short)]
+    widgets: Vec<String>,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "type")]
+enum InvalidateMessage {
+    Game { game: Uuid },
 }
 
 impl Widget {
@@ -71,6 +83,20 @@ impl Widget {
             Escape(&self.ident),
             Escape(priority),
             Escape(config)
+        )?;
+
+        Ok(())
+    }
+
+    pub fn patch(&self, w: &mut impl Write, game: Uuid) -> Result<()> {
+        let config = serde_json::to_string(&self.config)?;
+
+        writeln!(
+            w,
+            "UPDATE widget SET config = {} WHERE game = {} AND ident = {};",
+            Escape(config),
+            Escape(game),
+            Escape(&self.ident),
         )?;
 
         Ok(())
@@ -98,8 +124,8 @@ impl Team {
 }
 
 impl Game {
-    pub fn seed(&self, w: &mut impl Write) -> Result<()> {
-        let id = Uuid::new_v4();
+    pub fn seed(&self, w: &mut impl Write, id: Option<Uuid>) -> Result<()> {
+        let id = id.unwrap_or_else(Uuid::new_v4);
 
         writeln!(
             w,
@@ -118,12 +144,26 @@ impl Game {
 
         Ok(())
     }
+
+    pub fn patch(&self, w: &mut impl Write, id: Uuid, widgets: HashSet<String>) -> Result<()> {
+        for widget in &self.widgets {
+            if widgets.contains(&widget.ident) {
+                widget.patch(w, id)?;
+            }
+        }
+
+        let message = serde_json::to_string(&InvalidateMessage::Game { game: id })?;
+
+        writeln!(w, "NOTIFY invalidate, {};", Escape(message))?;
+
+        Ok(())
+    }
 }
 
 fn main() -> Result<()> {
     let opts = Options::parse();
 
-    let input = match opts.input {
+    let input = match &opts.input {
         Some(path) => fs::read_to_string(path)?,
         None => {
             let mut string = String::new();
@@ -134,16 +174,26 @@ fn main() -> Result<()> {
 
     let game: Game = json5::from_str(&input)?;
 
-    match opts.output {
-        Some(path) => {
-            let mut output = File::create(path)?;
-            game.seed(&mut output)?;
-        }
-        None => {
-            let mut output = stdout().lock();
-            game.seed(&mut output)?;
+    fn generate(mut output: impl Write, game: Game, opts: Options) -> Result<()> {
+        if opts.widgets.is_empty() {
+            game.seed(&mut output, opts.game_id)
+        } else {
+            let Some(id) = opts.game_id else {
+                bail!("Cannot generate patch without game id");
+            };
+
+            game.patch(&mut output, id, opts.widgets.into_iter().collect())
         }
     }
 
-    Ok(())
+    match &opts.output {
+        Some(path) => {
+            let output = File::create(path)?;
+            generate(output, game, opts)
+        }
+        None => {
+            let output = stdout().lock();
+            generate(output, game, opts)
+        }
+    }
 }
