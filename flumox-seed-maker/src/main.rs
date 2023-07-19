@@ -55,6 +55,7 @@ struct Options {
     /// Output path (default stdout)
     #[arg(long, short)]
     output: Option<PathBuf>,
+    /// Create / update game with this UUID
     #[arg(long, short)]
     game_id: Option<Uuid>,
     /// Patch widget with a given ident
@@ -127,6 +128,7 @@ impl Game {
     pub fn seed(&self, w: &mut impl Write, id: Option<Uuid>) -> Result<()> {
         let id = id.unwrap_or_else(Uuid::new_v4);
 
+        writeln!(w, "BEGIN;")?;
         writeln!(
             w,
             "INSERT INTO game (id, name) VALUES ({}, {});",
@@ -142,10 +144,14 @@ impl Game {
             team.seed(w, id)?;
         }
 
+        writeln!(w, "COMMIT;")?;
+
         Ok(())
     }
 
     pub fn patch(&self, w: &mut impl Write, id: Uuid, widgets: HashSet<String>) -> Result<()> {
+        writeln!(w, "BEGIN;")?;
+
         for widget in &self.widgets {
             if widgets.contains(&widget.ident) {
                 widget.patch(w, id)?;
@@ -155,6 +161,7 @@ impl Game {
         let message = serde_json::to_string(&InvalidateMessage::Game { game: id })?;
 
         writeln!(w, "NOTIFY invalidate, {};", Escape(message))?;
+        writeln!(w, "COMMIT;")?;
 
         Ok(())
     }
