@@ -55,10 +55,16 @@ struct Options {
     /// Output path (default stdout)
     #[arg(long, short)]
     output: Option<PathBuf>,
+
+    /// Generate update statements
+    #[arg(long, short)]
+    patch: bool,
+
     /// Create / update game with this UUID
     #[arg(long, short)]
     game_id: Option<Uuid>,
-    /// Patch widget with a given ident
+
+    /// Act on widget with a given ident
     #[arg(long = "widget", short)]
     widgets: Vec<String>,
 }
@@ -153,7 +159,7 @@ impl Game {
         writeln!(w, "BEGIN;")?;
 
         for widget in &self.widgets {
-            if widgets.contains(&widget.ident) {
+            if widgets.is_empty() || widgets.contains(&widget.ident) {
                 widget.patch(w, id)?;
             }
         }
@@ -182,14 +188,14 @@ fn main() -> Result<()> {
     let game: Game = json5::from_str(&input)?;
 
     fn generate(mut output: impl Write, game: Game, opts: Options) -> Result<()> {
-        if opts.widgets.is_empty() {
-            game.seed(&mut output, opts.game_id)
-        } else {
+        if opts.patch {
             let Some(id) = opts.game_id else {
                 bail!("Cannot generate patch without game id");
             };
 
             game.patch(&mut output, id, opts.widgets.into_iter().collect())
+        } else {
+            game.seed(&mut output, opts.game_id)
         }
     }
 
