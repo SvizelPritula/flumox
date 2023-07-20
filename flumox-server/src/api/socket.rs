@@ -1,5 +1,6 @@
 use std::{
     cmp::{max, min},
+    io,
     time::Duration,
 };
 
@@ -11,6 +12,7 @@ use axum::{
     response::Response,
 };
 use deadpool_postgres::{Pool, PoolError};
+use flate2::{write::ZlibEncoder, Compression};
 use futures::future::OptionFuture;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -31,7 +33,7 @@ use crate::{
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "kebab-case", tag = "type")]
 enum IncomingMessage {
-    Auth { token: SessionToken },
+    Auth { token: SessionToken, compress: bool },
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -43,26 +45,40 @@ enum OutgoingMessage<'a> {
     Error { reason: InternalErrorType },
 }
 
-fn malformed_message() -> Result<Message, serde_json::Error> {
-    let payload = serde_json::to_string(&OutgoingMessage::MalformedMessage)?;
-    Ok(Message::Text(payload))
+fn text_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
+    Ok(Message::Text(serde_json::to_string(message)?))
 }
 
-fn unknown_token() -> Result<Message, serde_json::Error> {
-    let payload = serde_json::to_string(&OutgoingMessage::UnknownToken)?;
-    Ok(Message::Text(payload))
+fn compressed_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
+    let mut writer = ZlibEncoder::new(Vec::new(), Compression::best());
+
+    serde_json::to_writer(&mut writer, message)?;
+
+    Ok(Message::Binary(writer.finish()?))
 }
 
-fn views(widgets: &[WidgetInstanceDelta]) -> Result<Message, serde_json::Error> {
-    let payload = serde_json::to_string(&OutgoingMessage::View { widgets })?;
-    Ok(Message::Text(payload))
+fn malformed_message() -> Result<Message, RunSocketError> {
+    text_message(&OutgoingMessage::MalformedMessage)
 }
 
-fn internal_error(error: &InternalError) -> Result<Message, serde_json::Error> {
-    let payload = serde_json::to_string(&OutgoingMessage::Error {
+fn unknown_token() -> Result<Message, RunSocketError> {
+    text_message(&OutgoingMessage::UnknownToken)
+}
+
+fn views(widgets: &[WidgetInstanceDelta], compress: bool) -> Result<Message, RunSocketError> {
+    let payload = OutgoingMessage::View { widgets };
+
+    if compress {
+        compressed_message(&payload)
+    } else {
+        text_message(&payload)
+    }
+}
+
+fn internal_error(error: &InternalError) -> Result<Message, RunSocketError> {
+    text_message(&OutgoingMessage::Error {
         reason: error.public_type(),
-    })?;
-    Ok(Message::Text(payload))
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -90,10 +106,10 @@ async fn wait_until(time: OffsetDateTime) {
 }
 
 async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(), RunSocketError> {
-    let token = loop {
+    let (token, compress) = loop {
         match socket.recv().await.transpose()? {
             Some(Message::Text(payload)) => match serde_json::from_str(&payload) {
-                Ok(IncomingMessage::Auth { token }) => break token,
+                Ok(IncomingMessage::Auth { token, compress }) => break (token, compress),
                 Err(_) => {
                     socket.send(malformed_message()?).await?;
                     return Ok(());
@@ -130,7 +146,7 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
         mut valid_until,
     } = render(&state, &meta, OffsetDateTime::now_utc())?;
 
-    socket.send(views(&delta(&widgets, &[]))?).await?;
+    socket.send(views(&delta(&widgets, &[]), compress)?).await?;
 
     loop {
         let validity = select! {
@@ -171,7 +187,9 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
                 valid_until: new_valid_until,
             } = render(&state, &meta, OffsetDateTime::now_utc())?;
 
-            socket.send(views(&delta(&new_widgets, &widgets))?).await?;
+            socket
+                .send(views(&delta(&new_widgets, &widgets), compress)?)
+                .await?;
 
             (widgets, valid_until) = (new_widgets, new_valid_until);
         }
@@ -196,7 +214,9 @@ pub async fn sync_socket(
                         let _ = socket.send(payload).await;
                     }
                 }
-                RunSocketError::Serialize(_) | RunSocketError::Transport(_) => {}
+                RunSocketError::Serialize(_)
+                | RunSocketError::Io(_)
+                | RunSocketError::Transport(_) => {}
             }
 
             warn!("Websocket connection closed due to error: {error}");
@@ -212,6 +232,8 @@ enum RunSocketError {
     Transport(#[from] axum::Error),
     #[error("serialization error: {0}")]
     Serialize(#[from] serde_json::Error),
+    #[error("io error: {0}")]
+    Io(#[from] io::Error),
 }
 
 macro_rules! proxy_internal_error {

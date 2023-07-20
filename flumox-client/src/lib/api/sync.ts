@@ -6,10 +6,12 @@ import { logout } from "../team";
 import { errorMalformedMessage, errorServerRejected, warningSessionExpired } from "$translations";
 import type { BadResponseType } from "./request";
 import { getErrorMessageForType } from "../error";
+import { isDeflateSupported, maybeDeflate } from "../deflate";
 
 interface LoginMessage {
     type: "auth",
-    token: string
+    token: string,
+    compress: boolean,
 }
 
 type OutgoingMessage = LoginMessage;
@@ -48,13 +50,15 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
         socket.addEventListener("open", () => {
             socket.send(JSON.stringify(<OutgoingMessage>{
                 type: "auth",
-                token
+                token,
+                compress: isDeflateSupported()
             }));
         });
 
-        socket.addEventListener("message", event => {
+        socket.addEventListener("message", async event => {
             try {
-                let payload: IncomingMessage = JSON.parse(event.data);
+                let data = await maybeDeflate(event.data);
+                let payload: IncomingMessage = JSON.parse(data);
 
                 switch (payload.type) {
                     case "malformed-message":

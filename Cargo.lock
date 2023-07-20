@@ -516,6 +516,7 @@ dependencies = [
  "channel-map",
  "clap",
  "deadpool-postgres",
+ "flate2",
  "flumox",
  "futures",
  "getrandom",
