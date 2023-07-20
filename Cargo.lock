@@ -230,15 +230,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "630be753d4e58660abd17930c71b647fe46c27ea6b63cc59e1e3851406972e42"
 
 [[package]]
-name = "blake2"
-version = "0.10.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "46502ad458c9a52b69d4d4d32775c788b7a1b85e8bc9d482d92250fc0e3f8efe"
-dependencies = [
- "digest",
-]
-
-[[package]]
 name = "block-buffer"
 version = "0.10.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -460,27 +451,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4443176a9f2c162692bd3d352d745ef9413eec5782a80d8fd6f8a1ac692a07f7"
 
 [[package]]
-name = "fingerprint-struct"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f19609f69dda64ee5e63629b229efd04943901548197a1b562e402871615fd51"
-dependencies = [
- "digest",
- "fingerprint-struct-derive",
-]
-
-[[package]]
-name = "fingerprint-struct-derive"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ec8bdb4d957da32f456051b8f1ca378977ee56254594b96b189765a9f7f6a19"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "flate2"
 version = "1.0.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -543,11 +513,9 @@ dependencies = [
  "async-trait",
  "axum",
  "base64 0.21.2",
- "blake2",
  "channel-map",
  "clap",
  "deadpool-postgres",
- "fingerprint-struct",
  "flumox",
  "futures",
  "getrandom",
