@@ -9,8 +9,9 @@ pub struct Text(Vec<Paragraph>);
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ConditionalParagraph {
-    content: String,
-    condition: Expr,
+    text: String,
+    show: Expr,
+    hide: Expr,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -43,8 +44,11 @@ impl Paragraph {
         match self {
             Paragraph::Simple(p) => Ok(Some(&p.0)),
             Paragraph::Conditional(p) => {
-                if ctx.eval(&p.condition)? {
-                    Ok(Some(&p.content))
+                let show = ctx.eval(&p.show)?;
+                let hide = ctx.eval(&p.hide)?;
+
+                if show && !hide {
+                    Ok(Some(&p.text))
                 } else {
                     Ok(None)
                 }

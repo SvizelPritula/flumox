@@ -42,7 +42,7 @@ VALUES
         "details": [
             "Takto vypadá šifra s nápovědami. Pro nápovědy se dají nastavit flexibilní časové limity.",
             "Zde se první dvě nápovědy odemknou chvíli po příchodu na šifru, třetí až po vyčerpání prvních dvou.",
-            {"content": "Jste tu už více než třicet sekund.", "condition": "this.visible + 30 s"}
+            {"text": "Jste tu už více než třicet sekund.", "show": "this.visible + 30 s"}
         ],
         "prompt": "Řešení:",
         "submit_button": "Odeslat",
