@@ -10,7 +10,9 @@ pub struct Text(Vec<Paragraph>);
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct ConditionalParagraph {
     text: String,
+    #[serde(default = "Expr::always")]
     show: Expr,
+    #[serde(default = "Expr::never")]
     hide: Expr,
 }
 
