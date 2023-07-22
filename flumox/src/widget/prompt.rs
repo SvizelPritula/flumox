@@ -9,6 +9,7 @@ use crate::{
     error::{ActionResult, ViewResult},
     expr::{Environment, Expr},
     solution::Solution,
+    text::Text,
     view_context::ViewContext,
     ActionError, EvalResult, Instance, Toast, ToastType,
 };
@@ -17,6 +18,7 @@ use crate::{
 pub struct Config {
     #[serde(flatten)]
     pub style: Style,
+    details: Text,
     solutions: Vec<Solution>,
     visible: Expr,
     #[serde(default = "Expr::never")]
@@ -39,6 +41,7 @@ pub struct State {
 pub struct View {
     #[serde(flatten)]
     style: Style,
+    details: Vec<String>,
     disabled: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     solution: Option<String>,
@@ -48,7 +51,6 @@ pub struct View {
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Style {
     pub name: String,
-    details: Vec<String>,
     prompt: String,
     submit_button: String,
 }
@@ -177,6 +179,7 @@ impl Config {
 
         Ok(Some(View {
             style: self.style.clone(),
+            details: self.details.render(&mut ctx)?,
             disabled: solved | disabled,
             solution: state.solved.as_ref().map(|s| s.canonical_text.clone()),
             hints,

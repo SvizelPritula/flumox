@@ -6,13 +6,13 @@ use crate::{
     error::ViewResult,
     expr::{Environment, Expr},
     view_context::ViewContext,
-    EvalResult,
+    EvalResult, text::Text,
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     name: Option<String>,
-    details: Vec<String>,
+    details: Text,
     time: Expr,
     visible: Expr,
     done_text: String,
@@ -81,7 +81,7 @@ impl Config {
 
         Ok(Some(View {
             name: self.name.clone(),
-            details: self.details.clone(),
+            details: self.details.render(&mut ctx)?,
             value,
         }))
     }

@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 use crate::{
     error::ViewResult,
     expr::{Environment, Expr},
+    text::Text,
     view_context::ViewContext,
     EvalResult,
 };
@@ -10,7 +11,7 @@ use crate::{
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Config {
     heading: Option<String>,
-    content: Vec<String>,
+    content: Text,
     visible: Expr,
     #[serde(default = "Expr::never")]
     obsolete: Expr,
@@ -47,7 +48,7 @@ impl Config {
         if visible {
             Ok(Some(View {
                 heading: self.heading.clone(),
-                content: self.content.clone(),
+                content: self.content.render(&mut ctx)?,
                 obsolete,
             }))
         } else {

@@ -4,6 +4,7 @@ mod error;
 mod expr;
 mod game;
 mod solution;
+mod text;
 mod toast;
 mod view_context;
 mod widget;
