@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 indexmap = "2.0.0"
-serde = { version = "1.0.164", features = ["derive"] }
-thiserror = "1.0.40"
-time = { version = "0.3.22", features = ["serde", "formatting", "parsing"] }
+serde = { version = "1.0.174", features = ["derive"] }
+thiserror = "1.0.44"
+time = { version = "0.3.23", features = ["serde", "formatting", "parsing"] }
 time-expr = { path = "../time-expr" }
 unicode-normalization = "0.1.22"

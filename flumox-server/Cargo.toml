@@ -5,12 +5,12 @@ edition = "2021"
 default-run = "flumox-server"
 
 [dependencies]
-anyhow = "1.0.71"
-async-trait = "0.1.68"
-axum = { version = "0.6.18", features = ["headers", "macros", "ws"] }
+anyhow = "1.0.72"
+async-trait = "0.1.72"
+axum = { version = "0.6.19", features = ["headers", "macros", "ws"] }
 base64 = "0.21.2"
 channel-map = { path = "../channel-map" }
-clap = { version = "4.3.8", features = ["derive", "env"] }
+clap = { version = "4.3.19", features = ["derive", "env"] }
 deadpool-postgres = "0.10.5"
 flate2 = "1.0.26"
 flumox = { path = "../flumox" }
@@ -18,12 +18,12 @@ futures = "0.3.28"
 getrandom = "0.2.10"
 http = "0.2.9"
 indexmap = "2.0.0"
-serde = { version = "1.0.164", features = ["derive"] }
-serde_json = "1.0.99"
-thiserror = "1.0.40"
-time = { version = "0.3.22", features = ["serde", "macros"] }
+serde = { version = "1.0.174", features = ["derive"] }
+serde_json = "1.0.103"
+thiserror = "1.0.44"
+time = { version = "0.3.23", features = ["serde", "macros"] }
 time-expr = { path = "../time-expr" }
-tokio = { version = "1.28.2", features = [
+tokio = { version = "1.29.1", features = [
     "macros",
     "rt-multi-thread",
     "sync",
@@ -35,7 +35,7 @@ tokio-postgres = { version = "0.7.8", features = [
     "with-uuid-1",
     "array-impls",
 ] }
-tower-http = { version = "0.4.1", features = [
+tower-http = { version = "0.4.3", features = [
     "fs",
     "trace",
     "sensitive-headers",
@@ -46,4 +46,4 @@ tower-http = { version = "0.4.1", features = [
 ] }
 tracing = "0.1.37"
 tracing-subscriber = { version = "0.3.17", features = ["parking_lot"] }
-uuid = { version = "1.3.4", features = ["v4", "serde"] }
+uuid = { version = "1.4.1", features = ["v4", "serde"] }

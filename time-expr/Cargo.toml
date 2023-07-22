@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-thiserror = "1.0.40"
-time = "0.3.22"
+thiserror = "1.0.44"
+time = "0.3.23"
