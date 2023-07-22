@@ -7,8 +7,8 @@ use axum::{
 };
 use http::{
     header::{
-        CACHE_CONTROL, CONTENT_SECURITY_POLICY, REFERRER_POLICY, X_CONTENT_TYPE_OPTIONS,
-        X_FRAME_OPTIONS, STRICT_TRANSPORT_SECURITY,
+        CACHE_CONTROL, CONTENT_SECURITY_POLICY, REFERRER_POLICY, STRICT_TRANSPORT_SECURITY,
+        X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS,
     },
     HeaderValue,
 };
@@ -42,7 +42,7 @@ pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()
         Router::new().fallback_service(ServeDir::new(path)).layer(
             SetResponseHeaderLayer::if_not_present(
                 CACHE_CONTROL,
-                HeaderValue::from_static("max-age=300"),
+                HeaderValue::from_static("max-age=1800, stale-while-revalidate=86400"),
             ),
         )
     } else {
