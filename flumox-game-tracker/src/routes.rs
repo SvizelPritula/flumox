@@ -11,7 +11,7 @@ use uuid::Uuid;
 use crate::{
     db::{self, ActionInfo, RecentActionInfo},
     error::InternalError,
-    parts::{action_description, not_found, page},
+    parts::{action_description, datetime, not_found, page, time_script},
 };
 
 pub async fn root(State(pool): State<Pool>) -> Result<Markup, InternalError> {
@@ -58,7 +58,7 @@ pub async fn game(
     fn action(action: &RecentActionInfo) -> Markup {
         html!(
             p {
-                (action.time)
+                (datetime(action.time))
                 " "
                 b { (action.team) }
                 " - "
@@ -87,6 +87,8 @@ pub async fn game(
                 @for a in &actions {
                     (action(a))
                 }
+
+                {(time_script())}
             ),
         ),
     ))
@@ -120,7 +122,7 @@ pub async fn team(
                 h3 { (config.style.name) " (" (ident) ")" }
                 p {
                     @match state.solved.as_ref() {
-                        Some(details) => "Solved at " i { (details.time) },
+                        Some(details) => "Solved at " i { (datetime(details.time)) },
                         None => i { "Not solved" },
                     }
                 }
@@ -131,7 +133,7 @@ pub async fn team(
                             li {
                                 b { (hint.0) }
                                 " at "
-                                i { (hint.1) }
+                                i { (datetime(*hint.1)) }
                             }
                         }
                     }
@@ -146,7 +148,7 @@ pub async fn team(
     fn action(action: &ActionInfo) -> Markup {
         html!(
             p {
-                (action.time)
+                (datetime(action.time))
                 " "
                 b { (action.widget) }
                 ": "
@@ -176,6 +178,8 @@ pub async fn team(
                 @if actions.is_empty() {
                     p { i { "None" } }
                 }
+
+                {(time_script())}
             ),
         ),
     ))

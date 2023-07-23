@@ -1,6 +1,7 @@
 use axum::http::StatusCode;
 use flumox::Action;
-use maud::{html, Markup, DOCTYPE};
+use maud::{html, Markup, PreEscaped, DOCTYPE};
+use time::OffsetDateTime;
 
 pub fn page(title: &str, body: Markup) -> Markup {
     html! {
@@ -38,4 +39,26 @@ pub fn action_description(payload: &Action) -> Markup {
         #[allow(unreachable_patterns)]
         _ => html!("Unknown action"),
     }
+}
+
+pub fn datetime(time: OffsetDateTime) -> Markup {
+    let timestamp = time.unix_timestamp_nanos() / 1000_000;
+
+    html!(
+        span.time data-time={(&timestamp)} {
+            (time)
+        }
+    )
+}
+
+pub fn time_script() -> Markup {
+    const CODE: &str = concat!(
+        "for (let e of document.getElementsByClassName('time')) {",
+            "e.innerText = new Date(parseInt(e.dataset.time)).toLocaleString([], { timeZoneName: 'short' })",
+        "}"
+    );
+
+    html!(
+        script {(PreEscaped(CODE))}
+    )
 }
