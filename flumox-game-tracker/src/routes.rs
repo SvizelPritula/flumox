@@ -114,10 +114,10 @@ pub async fn team(
     let widgets = db::states(&mut client, path.game, path.team).await?;
     let actions = db::actions(&mut client, path.game, path.team).await?;
 
-    fn widget(state: &Instance) -> Option<Markup> {
+    fn widget(state: &Instance, ident: &str) -> Option<Markup> {
         match state {
             Instance::Prompt(config, state) => Some(html!(
-                h3 { (config.style.name) }
+                h3 { (config.style.name) " (" (ident) ")" }
                 p {
                     @match state.solved.as_ref() {
                         Some(details) => "Solved at " i { (details.time) },
@@ -164,7 +164,7 @@ pub async fn team(
 
                 h2 { "State" }
                 @for w in &widgets {
-                    @if let Some(state) = widget(&w.instance) {
+                    @if let Some(state) = widget(&w.instance, &w.ident) {
                         (state)
                     }
                 }
