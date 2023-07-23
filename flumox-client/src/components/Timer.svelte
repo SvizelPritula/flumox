@@ -18,7 +18,7 @@
     let now = Date.now();
 
     let value = Math.max(target - now, 0);
-    value = Math.floor(value / 1000);
+    value = Math.ceil(value / 1000);
 
     seconds = value % 60;
     value = Math.floor(value / 60);
