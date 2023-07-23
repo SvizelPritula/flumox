@@ -11,6 +11,7 @@
     loginButton,
     loginIncorrect,
     loginSuccess,
+    appName,
   } from "$translations";
 
   let code = "";
@@ -36,6 +37,10 @@
     }
   }
 </script>
+
+<svelte:head>
+  <title>{appName}</title>
+</svelte:head>
 
 <main>
   <Toasts />
