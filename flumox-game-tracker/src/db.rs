@@ -100,7 +100,8 @@ pub async fn states(
     let stmt = db.prepare_cached(STATES).await?;
     let states = db.query(&stmt, &[&game, &team]).await?;
 
-    states.into_iter()
+    states
+        .into_iter()
         .map(|r| {
             let id = r.try_get(0)?;
             let ident = r.try_get(1)?;
@@ -144,7 +145,8 @@ pub async fn actions(
     let stmt = db.prepare_cached(ACTIONS).await?;
     let actions = db.query(&stmt, &[&game, &team]).await?;
 
-    actions.into_iter()
+    actions
+        .into_iter()
         .map(|r| {
             let widget = r.try_get(0)?;
             let time = r.try_get(1)?;
@@ -186,7 +188,8 @@ pub async fn recent_actions(
     let stmt = db.prepare_cached(ACTIONS).await?;
     let actions = db.query(&stmt, &[&game]).await?;
 
-    actions.into_iter()
+    actions
+        .into_iter()
         .map(|r| {
             let widget = r.try_get(0)?;
             let team = r.try_get(1)?;
@@ -199,6 +202,34 @@ pub async fn recent_actions(
                 time,
                 payload,
             })
+        })
+        .collect()
+}
+
+pub async fn last_solved(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+    team: Uuid,
+) -> Result<Vec<String>, InternalError> {
+    const SOLVED: &str = concat!(
+        "SELECT widget.ident ",
+        "FROM state JOIN widget ",
+        "ON state.game=widget.game AND state.widget=widget.id ",
+        "WHERE state.game = $1 AND state.team=$2 ",
+        "AND state.state->'solved' != 'null' ",
+        "AND widget.config->'type' = '\"prompt\"' ",
+        "ORDER BY priority DESC LIMIT 3"
+    );
+
+    let stmt = db.prepare_cached(SOLVED).await?;
+    let actions = db.query(&stmt, &[&game, &team]).await?;
+
+    actions
+        .into_iter()
+        .map(|r| {
+            let ident = r.try_get(0)?;
+
+            Ok(ident)
         })
         .collect()
 }

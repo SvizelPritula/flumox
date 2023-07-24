@@ -9,7 +9,7 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, ActionInfo, RecentActionInfo},
+    db::{self, last_solved, ActionInfo, RecentActionInfo},
     error::InternalError,
     parts::{action_description, datetime, not_found, page, time_script},
 };
@@ -52,8 +52,15 @@ pub async fn game(
         return Ok(not_found("Game"));
     };
 
-    let teams = db::teams(&mut client, path.game).await?;
+    let teams_simple = db::teams(&mut client, path.game).await?;
     let actions = db::recent_actions(&mut client, path.game).await?;
+
+    let mut teams = Vec::new();
+
+    for team in teams_simple {
+        let solved = last_solved(&mut client, path.game, team.id).await?;
+        teams.push((team, solved))
+    }
 
     fn action(action: &RecentActionInfo) -> Markup {
         html!(
@@ -77,9 +84,19 @@ pub async fn game(
                 h1 { (&game) }
 
                 h2 { "Teams" }
-                @for team in teams {
+                @for (team, solved) in teams {
                     p {
                         a href={"/" (path.game) "/" (team.id) "/"} { (team.name) }
+
+                        " ("
+                        @for (i, widget) in solved.iter().enumerate() {
+                            @if i != 0 {
+                                ", "
+                            }
+
+                            b { (widget) }
+                        }
+                        ")"
                     }
                 }
 
