@@ -7,6 +7,7 @@ members = [
     "time-expr",
     "channel-map",
 ]
+resolver = "2"
 
 [profile.release]
 lto = "fat"
