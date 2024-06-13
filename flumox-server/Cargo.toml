@@ -7,7 +7,7 @@ default-run = "flumox-server"
 [dependencies]
 anyhow = "1.0.72"
 async-trait = "0.1.72"
-axum = { version = "0.6.19", features = ["headers", "macros", "ws"] }
+axum = { version = "0.7.5", features = ["macros", "ws"] }
 base64 = "0.21.2"
 channel-map = { path = "../channel-map" }
 clap = { version = "4.3.19", features = ["derive", "env"] }
@@ -35,7 +35,7 @@ tokio-postgres = { version = "0.7.8", features = [
     "with-uuid-1",
     "array-impls",
 ] }
-tower-http = { version = "0.4.3", features = [
+tower-http = { version = "0.5.2", features = [
     "fs",
     "trace",
     "sensitive-headers",

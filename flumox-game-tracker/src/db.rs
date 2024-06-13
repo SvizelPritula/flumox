@@ -77,6 +77,7 @@ pub async fn team_name(
     team.map(|r| Ok(r.try_get(0)?)).transpose()
 }
 
+#[allow(unused)]
 #[derive(Debug, Clone)]
 pub struct Widget {
     pub id: Uuid,

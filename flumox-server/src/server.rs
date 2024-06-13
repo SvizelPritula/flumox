@@ -2,16 +2,17 @@ use std::{iter, net::SocketAddr, path::PathBuf};
 
 use anyhow::Result;
 use axum::{
-    routing::{get, post},
-    Router, Server,
-};
-use http::{
-    header::{
-        CACHE_CONTROL, CONTENT_SECURITY_POLICY, REFERRER_POLICY, STRICT_TRANSPORT_SECURITY,
-        X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS,
+    http::{
+        header::{
+            CACHE_CONTROL, CONTENT_SECURITY_POLICY, REFERRER_POLICY, STRICT_TRANSPORT_SECURITY,
+            X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS,
+        },
+        HeaderValue,
     },
-    HeaderValue,
+    routing::{get, post},
+    Router,
 };
+use tokio::net::TcpListener;
 use tower_http::{
     compression::CompressionLayer, sensitive_headers::SetSensitiveHeadersLayer, services::ServeDir,
     set_header::SetResponseHeaderLayer, trace::TraceLayer,
@@ -77,9 +78,11 @@ pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()
 
     info!(%address, "Server started");
 
-    Server::bind(&address)
-        .serve(app.into_make_service_with_connect_info::<SocketAddr>())
-        .await?;
+    axum::serve(
+        TcpListener::bind(address).await?,
+        app.into_make_service_with_connect_info::<SocketAddr>(),
+    )
+    .await?;
 
     Ok(())
 }

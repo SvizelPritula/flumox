@@ -1,11 +1,11 @@
 use std::str::FromStr;
 
+use axum::http::HeaderName;
 use base64::{
     engine::{general_purpose::URL_SAFE_NO_PAD, GeneralPurpose},
     Engine,
 };
 use getrandom::getrandom;
-use http::HeaderName;
 use serde::{de, Deserialize, Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;

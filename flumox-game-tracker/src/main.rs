@@ -4,14 +4,18 @@ use anyhow::Result;
 use axum::{
     extract::FromRef,
     http::{
-        header::{CACHE_CONTROL, REFERRER_POLICY, X_CONTENT_TYPE_OPTIONS, X_FRAME_OPTIONS, STRICT_TRANSPORT_SECURITY},
+        header::{
+            CACHE_CONTROL, REFERRER_POLICY, STRICT_TRANSPORT_SECURITY, X_CONTENT_TYPE_OPTIONS,
+            X_FRAME_OPTIONS,
+        },
         HeaderValue,
     },
     routing::get,
-    Router, Server,
+    Router,
 };
 use clap::{ArgAction, Parser};
 use deadpool_postgres::{Manager, Pool};
+use tokio::net::TcpListener;
 use tokio_postgres::{Config, NoTls};
 use tower_http::{
     compression::CompressionLayer, set_header::SetResponseHeaderLayer, trace::TraceLayer,
@@ -76,9 +80,7 @@ async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()
 
     info!(%address, "Server started");
 
-    Server::bind(&address)
-        .serve(app.into_make_service())
-        .await?;
+    axum::serve(TcpListener::bind(address).await?, app.into_make_service()).await?;
 
     Ok(())
 }
