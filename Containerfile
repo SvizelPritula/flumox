@@ -1,4 +1,4 @@
-FROM docker.io/library/rust:1.76-alpine3.19 AS cargo
+FROM docker.io/library/rust:1.79-alpine3.20 AS cargo
 
 RUN apk add --no-cache musl-dev
 
@@ -14,7 +14,7 @@ COPY Cargo.toml Cargo.lock ./
 
 RUN [ "cargo", "build", "--release", "--bin", "flumox-server" ]
 
-FROM docker.io/library/node:20.11-alpine3.19 as vite
+FROM docker.io/library/node:20.14-alpine3.20 as vite
 
 RUN npm config set update-notifier false
 
@@ -30,7 +30,7 @@ COPY flumox-client/index.html ./
 
 RUN npm run build
 
-FROM docker.io/library/alpine:3.19 AS runtime
+FROM docker.io/library/alpine:3.20 AS runtime
 
 RUN apk add --no-cache tini
 
