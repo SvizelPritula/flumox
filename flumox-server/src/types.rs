@@ -28,4 +28,5 @@ pub struct InstanceMetadata {
 pub struct WidgetInstance {
     pub view: View,
     pub id: Uuid,
+    pub obsolete: bool,
 }

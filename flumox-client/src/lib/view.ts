@@ -48,12 +48,14 @@ export interface CountdownView {
 
 export interface Instance {
     id: string,
-    view: PromptView | TextView | CountdownView
+    view: PromptView | TextView | CountdownView,
+    obsolete: boolean
 }
 
 export interface InstanceDelta {
     id: string,
-    view?: PromptView
+    view?: PromptView | TextView | CountdownView,
+    obsolete: boolean
 }
 
 export type Instances = Instance[];

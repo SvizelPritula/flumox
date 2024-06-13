@@ -9,7 +9,7 @@
   export let disabled: boolean;
 </script>
 
-<div>
+<div class:obsolete={view.obsolete}>
   {#if view.view.type == "prompt"}
     <Prompt view={view.view} id={view.id} {disabled} on:action />
   {:else if view.view.type == "text"}
@@ -39,5 +39,10 @@
 
   div > :global(*):last-child {
     margin-bottom: 0;
+  }
+
+  .obsolete {
+    color: hsl(0, 0%, 40%);
+    background-color: hsl(0, 0%, 7.5%);
   }
 </style>

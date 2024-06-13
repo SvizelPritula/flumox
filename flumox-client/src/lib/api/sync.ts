@@ -113,14 +113,14 @@ function applyDelta(delta: InstanceDelta[], old: Instance[]): Instance[] {
 
     let instances: Instance[] = [];
 
-    for (let { id, view } of delta) {
+    for (let { id, view, obsolete } of delta) {
         if (view != null) {
-            instances.push({ id, view })
+            instances.push({ id, view, obsolete })
         } else {
             let oldView = oldMap.get(id);
 
             if (oldView != null)
-                instances.push({ id, view: oldView });
+                instances.push({ id, view: oldView, obsolete });
         }
     }
 

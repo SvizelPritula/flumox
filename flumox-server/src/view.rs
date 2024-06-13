@@ -29,14 +29,20 @@ pub fn render(
 
         if let Some(view) = widget.view(ctx)? {
             let Some(meta) = meta.get(ident) else {
-                return Err(EvalError::UnknownPath { path: ident.clone().into_boxed_str() })
+                return Err(EvalError::UnknownPath {
+                    path: ident.clone().into_boxed_str(),
+                });
             };
 
-            result.push(WidgetInstance { view, id: meta.id });
+            result.push(WidgetInstance {
+                obsolete: view.obsolete(),
+                view,
+                id: meta.id,
+            });
         }
     }
 
-    result.sort_by_key(|w| w.view.obsolete());
+    result.sort_by_key(|w| w.obsolete);
 
     Ok(RenderResult {
         widgets: result,
@@ -49,24 +55,29 @@ pub struct WidgetInstanceDelta {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub view: Option<View>,
     pub id: Uuid,
+    pub obsolete: bool,
 }
 
 pub fn delta(new: &[WidgetInstance], old: &[WidgetInstance]) -> Vec<WidgetInstanceDelta> {
     let old: HashMap<Uuid, &View> = old
         .iter()
-        .map(|WidgetInstance { view, id }| (*id, view))
+        .map(|WidgetInstance { view, id, .. }| (*id, view))
         .collect();
 
     let mut delta = Vec::new();
 
-    for WidgetInstance { view, id } in new {
+    for WidgetInstance { view, id, obsolete } in new {
         let view = if old.get(id).copied().is_some_and(|old| old == view) {
             None
         } else {
             Some(view.clone())
         };
 
-        delta.push(WidgetInstanceDelta { view, id: *id });
+        delta.push(WidgetInstanceDelta {
+            view,
+            id: *id,
+            obsolete: *obsolete,
+        });
     }
 
     delta
