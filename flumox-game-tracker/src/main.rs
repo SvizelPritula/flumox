@@ -52,7 +52,13 @@ async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()
     };
 
     let app = app
-        .layer(CompressionLayer::new().deflate(true).gzip(true).br(true))
+        .layer(
+            CompressionLayer::new()
+                .deflate(true)
+                .gzip(true)
+                .br(true)
+                .zstd(true),
+        )
         .layer(SetResponseHeaderLayer::if_not_present(
             CACHE_CONTROL,
             HeaderValue::from_static("no-cache"),

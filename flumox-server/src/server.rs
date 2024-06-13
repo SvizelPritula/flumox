@@ -52,7 +52,13 @@ pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()
 
     let app = app
         .nest("/api/", api)
-        .layer(CompressionLayer::new().deflate(true).gzip(true).br(true))
+        .layer(
+            CompressionLayer::new()
+                .deflate(true)
+                .gzip(true)
+                .br(true)
+                .zstd(true),
+        )
         .layer(SetResponseHeaderLayer::if_not_present(
             X_FRAME_OPTIONS,
             HeaderValue::from_static("DENY"),
