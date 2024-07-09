@@ -42,7 +42,7 @@ struct Options {
     #[arg(long)]
     serve: Option<PathBuf>,
     /// Whether to use ANSI codes in output
-    #[arg(long, default_value_t = true, env = "LOG_COLOR", action=ArgAction::Set)]
+    #[arg(long, default_value_t = true, env = "LOG_COLOR", action = ArgAction::Set)]
     color: bool,
 }
 
