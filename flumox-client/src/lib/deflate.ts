@@ -1,5 +1,5 @@
 export async function deflate(payload: Blob): Promise<string> {
-    let decompressor = new DecompressionStream("deflate");
+    let decompressor = new DecompressionStream("deflate-raw");
     let decoder = new TextDecoderStream("utf-8");
 
     let reader = payload.stream().pipeThrough(decompressor).pipeThrough(decoder).getReader();
@@ -25,7 +25,7 @@ export async function maybeDeflate(payload: Blob | string): Promise<string> {
 
 export function isDeflateSupported(): boolean {
     try {
-        new DecompressionStream("deflate");
+        new DecompressionStream("deflate-raw");
         return true;
     } catch { }
 

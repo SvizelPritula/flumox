@@ -12,7 +12,7 @@ use axum::{
     response::Response,
 };
 use deadpool_postgres::{Pool, PoolError};
-use flate2::{write::ZlibEncoder, Compression};
+use flate2::{write::DeflateEncoder, Compression};
 use futures::future::OptionFuture;
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
@@ -50,7 +50,7 @@ fn text_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
 }
 
 fn compressed_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
-    let mut writer = ZlibEncoder::new(Vec::new(), Compression::best());
+    let mut writer = DeflateEncoder::new(Vec::new(), Compression::best());
 
     serde_json::to_writer(&mut writer, message)?;
 
