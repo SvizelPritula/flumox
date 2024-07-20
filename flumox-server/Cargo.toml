@@ -5,31 +5,31 @@ edition = "2021"
 default-run = "flumox-server"
 
 [dependencies]
-anyhow = "1.0.72"
-async-trait = "0.1.72"
+anyhow = "1.0.86"
+async-trait = "0.1.81"
 axum = { version = "0.7.5", features = ["macros", "ws"] }
-base64 = "0.21.2"
+base64 = "0.21.7"
 channel-map = { path = "../channel-map" }
-clap = { version = "4.3.19", features = ["derive", "env"] }
+clap = { version = "4.5.9", features = ["derive", "env"] }
 deadpool-postgres = "0.10.5"
-flate2 = "1.0.26"
+flate2 = "1.0.30"
 flumox = { path = "../flumox" }
-futures = "0.3.28"
-getrandom = "0.2.10"
-http = "0.2.9"
-indexmap = "2.0.0"
-serde = { version = "1.0.174", features = ["derive"] }
-serde_json = "1.0.103"
-thiserror = "1.0.44"
-time = { version = "0.3.23", features = ["serde", "macros"] }
+futures = "0.3.30"
+getrandom = "0.2.15"
+http = "0.2.12"
+indexmap = "2.2.6"
+serde = { version = "1.0.204", features = ["derive"] }
+serde_json = "1.0.120"
+thiserror = "1.0.62"
+time = { version = "0.3.36", features = ["serde", "macros"] }
 time-expr = { path = "../time-expr" }
-tokio = { version = "1.29.1", features = [
+tokio = { version = "1.38.0", features = [
     "macros",
     "rt-multi-thread",
     "sync",
     "parking_lot",
 ] }
-tokio-postgres = { version = "0.7.8", features = [
+tokio-postgres = { version = "0.7.10", features = [
     "with-time-0_3",
     "with-serde_json-1",
     "with-uuid-1",
@@ -45,6 +45,6 @@ tower-http = { version = "0.5.2", features = [
     "compression-zstd",
     "set-header",
 ] }
-tracing = "0.1.37"
-tracing-subscriber = { version = "0.3.17", features = ["parking_lot"] }
-uuid = { version = "1.4.1", features = ["v4", "serde"] }
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["parking_lot"] }
+uuid = { version = "1.10.0", features = ["v4", "serde"] }

@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-parking_lot = "0.12.1"
-tokio = { version = "1.29.1", features = ["parking_lot", "sync"] }
+parking_lot = "0.12.3"
+tokio = { version = "1.38.0", features = ["parking_lot", "sync"] }
