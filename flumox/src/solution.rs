@@ -8,6 +8,7 @@ use std::str::FromStr;
 pub enum Solution {
     Alphanumeric { solution: String },
     Number { solution: i32 },
+    Any,
 }
 
 fn normalize(s: &str) -> impl Iterator<Item = char> + '_ {
@@ -38,15 +39,15 @@ impl Solution {
         match self {
             Solution::Alphanumeric { solution } => fuzzy_equal(ans, solution),
             Solution::Number { solution } => numberic_equal(ans, *solution),
+            Solution::Any => true,
         }
     }
-}
 
-impl ToString for Solution {
-    fn to_string(&self) -> String {
+    pub fn canonical_answer(&self) -> Option<String> {
         match self {
-            Solution::Alphanumeric { solution } => solution.to_owned(),
-            Solution::Number { solution } => solution.to_string(),
+            Solution::Alphanumeric { solution } => Some(solution.to_owned()),
+            Solution::Number { solution } => Some(solution.to_string()),
+            Solution::Any => None,
         }
     }
 }

@@ -222,7 +222,9 @@ impl Config {
         }
 
         if let Some(solution) = self.solutions.iter().find(|s| s.check(&action.answer)) {
-            let canonical_text = solution.to_string();
+            let canonical_text = solution
+                .canonical_answer()
+                .unwrap_or_else(|| action.answer.to_owned());
 
             if banned.contains(canonical_text.as_str()) {
                 return Ok(ActionEffect::with_toast(
