@@ -95,16 +95,29 @@ impl Widget {
         Ok(())
     }
 
-    pub fn patch(&self, w: &mut impl Write, game: Uuid) -> Result<()> {
+    pub fn patch(&self, w: &mut impl Write, game: Uuid, index: Option<usize>) -> Result<()> {
         let config = serde_json::to_string(&self.config)?;
 
-        writeln!(
-            w,
-            "UPDATE widget SET config = {} WHERE game = {} AND ident = {};",
-            Escape(config),
-            Escape(game),
-            Escape(&self.ident),
-        )?;
+        if let Some(index) = index {
+            let priority = i64::try_from(index * 100)?;
+
+            writeln!(
+                w,
+                "UPDATE widget SET config = {}, priority = {} WHERE game = {} AND ident = {};",
+                Escape(config),
+                Escape(priority),
+                Escape(game),
+                Escape(&self.ident),
+            )?;
+        } else {
+            writeln!(
+                w,
+                "UPDATE widget SET config = {} WHERE game = {} AND ident = {};",
+                Escape(config),
+                Escape(game),
+                Escape(&self.ident),
+            )?;
+        }
 
         Ok(())
     }
@@ -158,9 +171,9 @@ impl Game {
     pub fn patch(&self, w: &mut impl Write, id: Uuid, widgets: HashSet<String>) -> Result<()> {
         writeln!(w, "BEGIN;")?;
 
-        for widget in &self.widgets {
+        for (i, widget) in self.widgets.iter().enumerate() {
             if widgets.is_empty() || widgets.contains(&widget.ident) {
-                widget.patch(w, id)?;
+                widget.patch(w, id, widgets.is_empty().then_some(i))?;
             }
         }
 
