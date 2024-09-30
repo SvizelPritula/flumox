@@ -16,10 +16,10 @@ impl Instance {
         match (self, action) {
             (Instance::Prompt(config, state), Action::Answer(action)) => config
                 .submit_answer(state, action, ctx)
-                .map(|e| e.map(State::Prompt)),
+                .map(|e| e.map(Box::new).map(State::Prompt)),
             (Instance::Prompt(config, state), Action::Hint(action)) => config
                 .take_hint(state, action, ctx)
-                .map(|e| e.map(State::Prompt)),
+                .map(|e| e.map(Box::new).map(State::Prompt)),
             _ => Err(ActionError::WidgetMismatch),
         }
     }

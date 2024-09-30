@@ -42,7 +42,7 @@ pub fn action_description(payload: &Action) -> Markup {
 }
 
 pub fn datetime(time: OffsetDateTime) -> Markup {
-    let timestamp = time.unix_timestamp_nanos() / 1000_000;
+    let timestamp = time.unix_timestamp_nanos() / 1_000_000;
 
     html!(
         span.time data-time={(&timestamp)} {

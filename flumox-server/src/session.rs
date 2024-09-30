@@ -1,4 +1,7 @@
-use std::str::FromStr;
+use std::{
+    fmt::{self, Display},
+    str::FromStr,
+};
 
 use axum::http::HeaderName;
 use base64::{
@@ -27,9 +30,9 @@ impl SessionToken {
     }
 }
 
-impl ToString for SessionToken {
-    fn to_string(&self) -> String {
-        SessionToken::BASE64.encode(self.0)
+impl Display for SessionToken {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(&SessionToken::BASE64.encode(self.0))
     }
 }
 
@@ -52,7 +55,7 @@ impl Serialize for SessionToken {
     where
         S: Serializer,
     {
-        serializer.serialize_str(&self.to_string())
+        serializer.serialize_str(&SessionToken::BASE64.encode(self.0))
     }
 }
 

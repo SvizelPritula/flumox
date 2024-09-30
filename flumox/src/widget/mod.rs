@@ -17,7 +17,7 @@ macro_rules! define_widgets {
         #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum Config {
             $(
-                $type($module::Config),
+                $type(Box<$module::Config>),
             )*
         }
 
@@ -25,14 +25,14 @@ macro_rules! define_widgets {
         #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum State {
             $(
-                $type($module::State),
+                $type(Box<$module::State>),
             )*
         }
 
         #[derive(Debug, Clone)]
         pub enum Instance {
             $(
-                $type($module::Config, $module::State),
+                $type(Box<$module::Config>, Box<$module::State>),
             )*
         }
 
@@ -40,7 +40,7 @@ macro_rules! define_widgets {
         #[serde(rename_all = "kebab-case", tag = "type")]
         pub enum View {
             $(
-                $type($module::View),
+                $type(Box<$module::View>),
             )*
         }
 
@@ -50,7 +50,7 @@ macro_rules! define_widgets {
                     $(
                         Config::$type(config) => {
                             let state = config.default_state();
-                            Instance::$type(config, state)
+                            Instance::$type(config, Box::new(state))
                         }
                     )*
                 }
@@ -79,7 +79,7 @@ macro_rules! define_widgets {
             pub fn view(&self, ctx: ViewContext) -> ViewResult<View> {
                 let view = match self {
                     $(
-                        Instance::$type(c, s) => c.view(s, ctx)?.map(View::$type),
+                        Instance::$type(c, s) => c.view(s, ctx)?.map(Box::new).map(View::$type),
                     )*
                 };
 
