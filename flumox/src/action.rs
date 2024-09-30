@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use time::OffsetDateTime;
 use time_expr::EvalError;
 
-use crate::{error::ActionResult, ActionError, Environment, Instance, State, Toast, expr::Expr};
+use crate::{error::ActionResult, expr::Expr, ActionError, Environment, Instance, State, Toast};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case", tag = "type")]
@@ -64,7 +64,7 @@ pub struct ActionContext<'a> {
 }
 
 impl<'a> ActionContext<'a> {
-    pub fn eval(&mut self, expr: &Expr) -> Result<bool ,EvalError> {
+    pub fn eval(&mut self, expr: &Expr) -> Result<bool, EvalError> {
         let value = self.env.eval(expr)?;
         Ok(value.to_bool(self.time))
     }

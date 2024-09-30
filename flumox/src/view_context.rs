@@ -1,9 +1,9 @@
 use std::cmp::min;
 
 use time::OffsetDateTime;
-use time_expr::{Value, EvalError};
+use time_expr::{EvalError, Value};
 
-use crate::{Environment, expr::Expr};
+use crate::{expr::Expr, Environment};
 
 #[derive(Debug)]
 pub struct ViewContext<'a> {

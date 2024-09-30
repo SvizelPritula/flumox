@@ -7,6 +7,6 @@ edition = "2021"
 indexmap = "2.2.6"
 serde = { version = "1.0.204", features = ["derive"] }
 thiserror = "1.0.62"
-time = { version = "0.3.36", features = ["serde", "formatting", "parsing"] }
+time = { version = "0.3.36", features = ["serde", "formatting", "parsing", "serde-human-readable"] }
 time-expr = { path = "../time-expr" }
 unicode-normalization = "0.1.23"

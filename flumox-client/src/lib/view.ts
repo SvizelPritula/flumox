@@ -6,7 +6,8 @@ export interface PromptView {
     submit_button: string,
     disabled: boolean,
     solution?: string,
-    hints: Hint[]
+    hints: Hint[],
+    time: TimeSpent
 }
 
 export type Hint = {
@@ -23,7 +24,9 @@ export type Hint = {
 } | {
     state: "taken",
     content: string[]
-})
+});
+
+export type TimeSpent = { type: "solving", since: string } | { type: "solved", after: string } | null;
 
 export interface TextView {
     type: "text",

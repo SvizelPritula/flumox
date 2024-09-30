@@ -4,6 +4,9 @@
   import { button, input, label } from "../../../styles/forms.module.css";
   import type { Action } from "../../../lib/action";
   import Hint from "./Hint.svelte";
+  import Timer from "../../Timer.svelte";
+  import Time from "../../Time.svelte";
+  import { timeSpent } from "$translations";
 
   export let view: PromptView;
   export let id: string;
@@ -29,6 +32,17 @@
 {#each view.details as detail}
   <p>{detail}</p>
 {/each}
+
+{#if view.time != null}
+  <p>
+    {timeSpent}
+    {#if view.time.type == "solving"}
+      <Timer time={view.time.since} direction="up" />
+    {:else if view.time.type == "solved"}
+      <Time duration={parseFloat(view.time.after) * 1000} />
+    {/if}
+  </p>
+{/if}
 
 <form on:submit|preventDefault={submit}>
   <label class={label}>

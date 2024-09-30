@@ -14,6 +14,8 @@ declare module "$translations" {
     const loginSuccess: string;
     const loginIncorrect: string;
 
+    const timeSpent: string;
+
     const settingsOpen: string;
     const settingsClose: string;
     const settingsName: string;

@@ -13,6 +13,8 @@ loginButton: Odeslat
 loginSuccess: Přihlášen tým
 loginIncorrect: Tento přístupový kód není správný.
 
+timeSpent: "Strávili jste tu:"
+
 settingsOpen: nastavení
 settingsClose: zpět do hry
 settingsName: Nastavení

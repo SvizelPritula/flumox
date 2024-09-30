@@ -53,7 +53,9 @@ pub struct Cache(HashMap<String, EvaluationState>);
 impl<'a> Resolve for Environment<'a> {
     fn resolve(&mut self, path: &[&str]) -> EvalResult {
         let Some((module, subpath)) = path.split_first() else {
-            return Err(EvalError::UnknownPath { path: String::new().into() });
+            return Err(EvalError::UnknownPath {
+                path: String::new().into(),
+            });
         };
 
         let module = match (module, self.this) {

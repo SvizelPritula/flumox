@@ -22,7 +22,9 @@ pub async fn login(db: &mut Client, code: &str) -> Result<Option<(SessionToken, 
     let statement = db.prepare_cached(TEAM_BY_KEY).await?;
     let row = db.query_opt(&statement, &[&code]).await?;
 
-    let Some(row) = row else { return Ok(None); };
+    let Some(row) = row else {
+        return Ok(None);
+    };
 
     let game: Uuid = row.try_get(0)?;
     let team: Uuid = row.try_get(1)?;

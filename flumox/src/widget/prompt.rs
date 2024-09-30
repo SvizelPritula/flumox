@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
 use serde::{Deserialize, Serialize};
-use time::OffsetDateTime;
+use time::{Duration, OffsetDateTime};
 use time_expr::{EvalError, Value};
 
 use crate::{
@@ -46,6 +46,8 @@ pub struct View {
     #[serde(skip_serializing_if = "Option::is_none")]
     solution: Option<String>,
     hints: Vec<HintView>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    time: Option<TimeView>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -98,6 +100,18 @@ enum HintStateView {
     },
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case", tag = "type")]
+enum TimeView {
+    Solving {
+        #[serde(with = "time::serde::rfc3339")]
+        since: OffsetDateTime,
+    },
+    Solved {
+        after: Duration,
+    },
+}
+
 impl Config {
     pub fn default_state(&self) -> State {
         State::default()
@@ -130,7 +144,8 @@ impl Config {
     }
 
     pub fn view(&self, state: &State, mut ctx: ViewContext) -> ViewResult<View> {
-        let visible = ctx.eval(&self.visible)?;
+        let visible_since = ctx.env.eval(&self.visible)?;
+        let visible = ctx.time.after(visible_since);
         let disabled = ctx.eval(&self.disabled)?;
 
         if !visible {
@@ -177,12 +192,23 @@ impl Config {
             });
         }
 
+        let time = match (visible_since, &state.solved) {
+            (Value::Always | Value::Never, _) => None,
+            (Value::Since(since), None) => Some(TimeView::Solving { since }),
+            (Value::Since(since), Some(SolutionDetails { time: until, .. })) => {
+                Some(TimeView::Solved {
+                    after: *until - since,
+                })
+            }
+        };
+
         Ok(Some(View {
             style: self.style.clone(),
             details: self.details.render(&mut ctx)?,
             disabled: solved | disabled,
             solution: state.solved.as_ref().map(|s| s.canonical_text.clone()),
             hints,
+            time,
         }))
     }
 

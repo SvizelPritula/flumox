@@ -5,8 +5,9 @@ use time_expr::Value;
 use crate::{
     error::ViewResult,
     expr::{Environment, Expr},
+    text::Text,
     view_context::ViewContext,
-    EvalResult, text::Text,
+    EvalResult,
 };
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
