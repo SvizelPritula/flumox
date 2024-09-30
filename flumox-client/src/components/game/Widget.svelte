@@ -27,6 +27,8 @@
     border-radius: 1rem;
     padding: 2rem;
     margin: 1rem 0;
+
+    overflow-wrap: anywhere;
   }
 
   div > :global(h2) {
