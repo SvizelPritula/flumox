@@ -38,7 +38,7 @@ struct State {
     db: Pool,
 }
 
-async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()> {
+async fn serve(state: State, address: SocketAddr, creds: Option<Credentials>) -> Result<()> {
     let app = Router::new()
         .route("/", get(routes::root))
         .route("/:game/", get(routes::game))
@@ -82,8 +82,6 @@ async fn serve(state: State, port: u16, creds: Option<Credentials>) -> Result<()
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    let address = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], port));
-
     info!(%address, "Server started");
 
     axum::serve(TcpListener::bind(address).await?, app.into_make_service()).await?;
@@ -100,9 +98,9 @@ struct Credentials {
 #[derive(Debug, Parser)]
 /// A server for tracking teams progress in Flumox
 struct Options {
-    /// The port to listen on
-    #[arg(long, default_value_t = 8000, env)]
-    port: u16,
+    /// The port and address to listen on
+    #[arg(long, default_value_t = SocketAddr::from(([0,0,0,0,0,0,0,0], 8000)), env)]
+    address: SocketAddr,
     /// A connection string to a Postgres database
     #[arg(
         long,
@@ -146,5 +144,5 @@ async fn main() -> Result<()> {
         user: options.user,
     });
 
-    serve(state, options.port, creds).await
+    serve(state, options.address, creds).await
 }

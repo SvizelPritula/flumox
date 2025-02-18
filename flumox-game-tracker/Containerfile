@@ -20,7 +20,7 @@ RUN apk add --no-cache tini
 
 COPY --from=cargo /usr/src/flumox/target/release/flumox-game-tracker /usr/local/bin/
 
-ENV PORT=8000
+ENV ADDRESS=[::]:8000
 EXPOSE 8000
 
 ENTRYPOINT [ "tini", "flumox-game-tracker" ]

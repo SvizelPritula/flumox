@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{net::SocketAddr, path::PathBuf};
 
 use anyhow::Result;
 use channel_map::ChannelMap;
@@ -28,9 +28,9 @@ mod view;
 #[derive(Debug, Parser)]
 /// A server for hosting puzzle hunts
 struct Options {
-    /// The port to listen on
-    #[arg(long, default_value_t = 8000, env)]
-    port: u16,
+    /// The port and address to listen on
+    #[arg(long, default_value_t = SocketAddr::from(([0,0,0,0,0,0,0,0], 8000)), env)]
+    address: SocketAddr,
     /// A connection string to a Postgres database
     #[arg(
         long,
@@ -92,5 +92,5 @@ async fn main() -> Result<()> {
 
     let state = State { pool, channels };
 
-    serve(state, options.port, options.serve).await
+    serve(state, options.address, options.serve).await
 }

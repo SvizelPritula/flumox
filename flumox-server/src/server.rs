@@ -21,7 +21,7 @@ use tracing::info;
 
 use crate::{api, session::X_AUTH_TOKEN, state::State};
 
-pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()> {
+pub async fn serve(state: State, address: SocketAddr, serve: Option<PathBuf>) -> Result<()> {
     let api = Router::new()
         .route("/login", post(api::login))
         .route("/me", get(api::me))
@@ -79,8 +79,6 @@ pub async fn serve(state: State, port: u16, serve: Option<PathBuf>) -> Result<()
         .layer(SetSensitiveHeadersLayer::new(iter::once(
             X_AUTH_TOKEN.clone(),
         )));
-
-    let address = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], port));
 
     info!(%address, "Server started");
 
