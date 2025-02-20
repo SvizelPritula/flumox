@@ -7,6 +7,7 @@ import { errorMalformedMessage, errorServerRejected, warningSessionExpired } fro
 import type { BadResponseType } from "./request";
 import { getErrorMessageForType } from "../error";
 import { isDeflateSupported, maybeDeflate } from "../deflate";
+import { createWatchdog } from "../connect/watchdog";
 
 interface LoginMessage {
     type: "auth",
@@ -14,7 +15,11 @@ interface LoginMessage {
     compress: boolean,
 }
 
-type OutgoingMessage = LoginMessage;
+interface PingMessage {
+    type: "ping"
+}
+
+type OutgoingMessage = LoginMessage | PingMessage;
 
 interface MalformedMessageMessage {
     type: "malformed-message"
@@ -29,12 +34,16 @@ interface ViewMessage {
     widgets: InstanceDelta[]
 }
 
+interface PongMessage {
+    type: "pong"
+}
+
 interface ErrorMessage {
     type: "error",
     reason: BadResponseType
 }
 
-type IncomingMessage = MalformedMessageMessage | UnknownTokenMessage | ViewMessage | ErrorMessage;
+type IncomingMessage = MalformedMessageMessage | UnknownTokenMessage | ViewMessage | PongMessage | ErrorMessage;
 
 export function sync(view: Writable<Instances | null>, online: Writable<boolean>, token: string): () => void {
     online.set(false);
@@ -44,6 +53,12 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
         url.protocol = url.protocol == 'https:' ? 'wss' : 'ws';
 
         let socket = new WebSocket(url);
+
+        let watchdog = createWatchdog(() => {
+            socket.send(JSON.stringify(<OutgoingMessage>{
+                type: "ping",
+            }));
+        }, retry);
 
         let oldInstances: Instances = [];
 
@@ -79,6 +94,9 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
                         view.set(instances);
                         break;
 
+                    case "pong":
+                        break
+
                     case "error":
                         toast(getErrorMessageForType(payload.reason), "danger");
                         break;
@@ -86,6 +104,8 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
                     default:
                         toast(errorMalformedMessage, "danger");
                 }
+
+                watchdog.feed();
             } catch (error) {
                 console.error(error);
                 toast(errorMalformedMessage, "danger");
@@ -98,7 +118,7 @@ export function sync(view: Writable<Instances | null>, online: Writable<boolean>
 
         socket.addEventListener("close", retry);
 
-        return () => socket.close();
+        return () => { socket.close(); watchdog.stop(); };
     }, () => {
         online.set(false);
     });
