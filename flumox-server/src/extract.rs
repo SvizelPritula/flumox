@@ -113,7 +113,7 @@ impl<S> FromRequestParts<S> for ForwardedIp {
     type Rejection = RealIpError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        static FORWARDED: HeaderName = HeaderName::from_static("forwaded");
+        static FORWARDED: HeaderName = HeaderName::from_static("forwarded");
 
         let elements = http_forwarded_header::parse(
             parts
