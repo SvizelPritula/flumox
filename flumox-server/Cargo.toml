@@ -46,5 +46,9 @@ tower-http = { version = "0.5.2", features = [
     "set-header",
 ] }
 tracing = "0.1.40"
+tracing-journald = { version = "0.3.1", optional = true }
 tracing-subscriber = { version = "0.3.18", features = ["parking_lot"] }
 uuid = { version = "1.10.0", features = ["v7", "serde"] }
+
+[features]
+journald = ["dep:tracing-journald"]

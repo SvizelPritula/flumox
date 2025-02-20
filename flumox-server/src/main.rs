@@ -77,15 +77,28 @@ fn start_message_listener(config: Config) -> Channels {
     }
 }
 
-#[tokio::main]
-async fn main() -> Result<()> {
-    let options = Options::parse();
-
+fn setup_tracing(options: &Options) -> Result<()> {
     let stdout = fmt::layer()
         .with_ansi(options.color)
         .with_filter(LevelFilter::INFO);
 
+    #[cfg(feature = "journald")]
+    {
+        let journald = tracing_journald::layer()?.with_filter(LevelFilter::INFO);
+        registry().with(stdout).with(journald).init();
+    }
+
+    #[cfg(not(feature = "journald"))]
     registry().with(stdout).init();
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() -> Result<()> {
+    let options = Options::parse();
+
+    setup_tracing(&options)?;
 
     let pool = connect_db(options.db.clone())?;
     let channels = start_message_listener(options.db);
