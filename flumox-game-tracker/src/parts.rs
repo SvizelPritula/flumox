@@ -45,20 +45,51 @@ pub fn datetime(time: OffsetDateTime) -> Markup {
     let timestamp = time.unix_timestamp_nanos() / 1_000_000;
 
     html!(
-        span.time data-time={(&timestamp)} {
+        span.time data-time={(&timestamp)} data-style="full" {
+            (time)
+        }
+    )
+}
+
+pub fn short_time(time: OffsetDateTime) -> Markup {
+    let timestamp = time.unix_timestamp_nanos() / 1_000_000;
+
+    html!(
+        span.time data-time={(&timestamp)} data-style="time" {
             (time)
         }
     )
 }
 
 pub fn time_script() -> Markup {
+    #[rustfmt::skip]
     const CODE: &str = concat!(
         "for (let e of document.getElementsByClassName('time')) {",
-            "e.innerText = new Date(parseInt(e.dataset.time)).toLocaleString([], { timeZoneName: 'short' })",
+            "e.innerText = new Date(parseInt(e.dataset.time)).toLocaleString([], {",
+                "full: { timeZoneName: 'short' },",
+                "time: { timeStyle: 'short' }",
+            "}[e.dataset.style]);",
         "}"
     );
 
     html!(
         script {(PreEscaped(CODE))}
+    )
+}
+
+pub fn table_style() -> Markup {
+    #[rustfmt::skip]
+    const CODE: &str = concat!(
+        "td, th {",
+            "border: 1px solid;",
+            "padding: 3px;",
+        "}",
+        "table {",
+            "border-collapse: collapse;",
+        "}"
+    );
+
+    html!(
+        style {(PreEscaped(CODE))}
     )
 }

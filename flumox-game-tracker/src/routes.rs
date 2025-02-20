@@ -9,9 +9,9 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    db::{self, last_solved, ActionInfo, RecentActionInfo},
+    db::{self, ActionInfo, RecentActionInfo, StateKey},
     error::InternalError,
-    parts::{action_description, datetime, not_found, page, time_script},
+    parts::{action_description, datetime, not_found, page, short_time, table_style, time_script},
 };
 
 pub async fn root(State(pool): State<Pool>) -> Result<Markup, InternalError> {
@@ -52,15 +52,10 @@ pub async fn game(
         return Ok(not_found("Game"));
     };
 
-    let teams_simple = db::teams(&mut client, path.game).await?;
+    let teams = db::teams(&mut client, path.game).await?;
+    let prompts = db::prompts(&mut client, path.game).await?;
+    let solve_times = db::solve_times(&mut client, path.game).await?;
     let actions = db::recent_actions(&mut client, path.game).await?;
-
-    let mut teams = Vec::new();
-
-    for team in teams_simple {
-        let solved = last_solved(&mut client, path.game, team.id).await?;
-        teams.push((team, solved))
-    }
 
     fn action(action: &RecentActionInfo) -> Markup {
         html!(
@@ -84,19 +79,35 @@ pub async fn game(
                 h1 { (&game) }
 
                 h2 { "Teams" }
-                @for (team, solved) in teams {
-                    p {
-                        a href={"/" (path.game) "/" (team.id) "/"} { (team.name) }
+                table {
+                    thead {
+                        tr {
+                            th;
 
-                        " ("
-                        @for (i, widget) in solved.iter().enumerate() {
-                            @if i != 0 {
-                                ", "
+                            @for team in &teams {
+                                th {
+                                    a href={"/" (path.game) "/" (team.id) "/"} { (team.name) }
+                                }
                             }
-
-                            b { (widget) }
                         }
-                        ")"
+                    }
+
+                    tbody {
+                        @for prompt in &prompts {
+                            tr {
+                                th {
+                                    (prompt.config.style.name)
+                                }
+
+                                @for team in &teams {
+                                    td {
+                                        @if let Some(time) = solve_times.get(&StateKey { team: team.id, widget: prompt.id }) {
+                                            (short_time(*time))
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -105,7 +116,8 @@ pub async fn game(
                     (action(a))
                 }
 
-                {(time_script())}
+                (time_script())
+                (table_style())
             ),
         ),
     ))

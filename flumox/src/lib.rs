@@ -7,7 +7,7 @@ mod solution;
 mod text;
 mod toast;
 mod view_context;
-mod widget;
+pub mod widget;
 
 pub use action::{Action, ActionContext, ActionEffect};
 pub use error::{ActionError, EvalResult, StateMismatchError};

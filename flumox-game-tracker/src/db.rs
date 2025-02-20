@@ -1,5 +1,11 @@
+use std::collections::HashMap;
+
+use anyhow::anyhow;
 use deadpool_postgres::Transaction;
-use flumox::{Action, Config, Instance, State};
+use flumox::{
+    widget::prompt::{self, SolutionDetails},
+    Action, Config, Instance, State,
+};
 use time::OffsetDateTime;
 use tokio_postgres::types::Json;
 use uuid::Uuid;
@@ -48,7 +54,7 @@ pub struct Team {
 }
 
 pub async fn teams(db: &mut Transaction<'_>, game: Uuid) -> Result<Vec<Team>, InternalError> {
-    const TEAMS: &str = "SELECT id, name FROM team WHERE game = $1";
+    const TEAMS: &str = "SELECT id, name FROM team WHERE game = $1 ORDER BY name";
 
     let stmt = db.prepare_cached(TEAMS).await?;
     let teams = db.query(&stmt, &[&game]).await?;
@@ -77,10 +83,8 @@ pub async fn team_name(
     team.map(|r| Ok(r.try_get(0)?)).transpose()
 }
 
-#[allow(unused)]
 #[derive(Debug, Clone)]
-pub struct Widget {
-    pub id: Uuid,
+pub struct WidgetInstance {
     pub ident: String,
     pub instance: Instance,
 }
@@ -89,9 +93,9 @@ pub async fn states(
     db: &mut Transaction<'_>,
     game: Uuid,
     team: Uuid,
-) -> Result<Vec<Widget>, InternalError> {
+) -> Result<Vec<WidgetInstance>, InternalError> {
     const STATES: &str = concat!(
-        "SELECT widget.id, widget.ident, state.state, widget.config ",
+        "SELECT widget.ident, state.state, widget.config ",
         "FROM widget LEFT JOIN state ",
         "ON state.game=widget.game AND state.widget=widget.id AND state.team=$2 ",
         "WHERE widget.game=$1 ",
@@ -104,21 +108,16 @@ pub async fn states(
     states
         .into_iter()
         .map(|r| {
-            let id = r.try_get(0)?;
-            let ident = r.try_get(1)?;
-            let state: Option<Json<State>> = r.try_get(2)?;
-            let Json(config): Json<Config> = r.try_get(3)?;
+            let ident = r.try_get(0)?;
+            let state: Option<Json<State>> = r.try_get(1)?;
+            let Json(config): Json<Config> = r.try_get(2)?;
 
             let instance = match state {
                 Some(Json(state)) => config.instance(state)?,
                 None => config.instance_default(),
             };
 
-            Ok(Widget {
-                id,
-                ident,
-                instance,
-            })
+            Ok(WidgetInstance { ident, instance })
         })
         .collect()
 }
@@ -207,30 +206,74 @@ pub async fn recent_actions(
         .collect()
 }
 
-pub async fn last_solved(
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct StateKey {
+    pub team: Uuid,
+    pub widget: Uuid,
+}
+
+pub async fn solve_times(
     db: &mut Transaction<'_>,
     game: Uuid,
-    team: Uuid,
-) -> Result<Vec<String>, InternalError> {
+) -> Result<HashMap<StateKey, OffsetDateTime>, InternalError> {
     const SOLVED: &str = concat!(
-        "SELECT widget.ident ",
+        "SELECT state.team, state.widget, state.state->'solved' ",
         "FROM state JOIN widget ",
         "ON state.game=widget.game AND state.widget=widget.id ",
-        "WHERE state.game = $1 AND state.team=$2 ",
+        "WHERE state.game = $1 ",
         "AND state.state->'solved' != 'null' ",
         "AND widget.config->'type' = '\"prompt\"' ",
-        "ORDER BY priority DESC LIMIT 3"
+        "ORDER BY priority"
     );
 
     let stmt = db.prepare_cached(SOLVED).await?;
-    let actions = db.query(&stmt, &[&game, &team]).await?;
+    let actions = db.query(&stmt, &[&game]).await?;
 
     actions
         .into_iter()
         .map(|r| {
-            let ident = r.try_get(0)?;
+            let team = r.try_get(0)?;
+            let widget = r.try_get(1)?;
+            let Json(SolutionDetails { time, .. }) = r.try_get(2)?;
 
-            Ok(ident)
+            Ok((StateKey { team, widget }, time))
+        })
+        .collect()
+}
+
+#[derive(Debug, Clone)]
+pub struct PromptConfig {
+    pub id: Uuid,
+    pub config: prompt::Config,
+}
+
+pub async fn prompts(
+    db: &mut Transaction<'_>,
+    game: Uuid,
+) -> Result<Vec<PromptConfig>, InternalError> {
+    const SOLVED: &str = concat!(
+        "SELECT widget.id, widget.config ",
+        "FROM widget ",
+        "WHERE widget.game = $1 ",
+        "AND widget.config->'type' = '\"prompt\"' ",
+        "ORDER BY priority"
+    );
+
+    let stmt = db.prepare_cached(SOLVED).await?;
+    let actions = db.query(&stmt, &[&game]).await?;
+
+    actions
+        .into_iter()
+        .map(|r| {
+            let id = r.try_get(0)?;
+            let Json(config): Json<Config> = r.try_get(1)?;
+
+            let config = match config {
+                Config::Prompt(config) => *config,
+                _ => return Err(InternalError::from(anyhow!("Expected a prompt widget"))),
+            };
+
+            Ok(PromptConfig { id, config })
         })
         .collect()
 }

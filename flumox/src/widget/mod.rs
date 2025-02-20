@@ -7,9 +7,9 @@ use crate::{
     EvalResult,
 };
 
-mod countdown;
-mod prompt;
-mod text;
+pub mod countdown;
+pub mod prompt;
+pub mod text;
 
 macro_rules! define_widgets {
     ($($type: ident, $module: ident);*) => {
