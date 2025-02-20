@@ -99,7 +99,7 @@ struct Credentials {
 /// A server for tracking teams progress in Flumox
 struct Options {
     /// The port and address to listen on
-    #[arg(long, default_value_t = SocketAddr::from(([0,0,0,0,0,0,0,0], 8000)), env)]
+    #[arg(long, default_value_t = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], 8000)), env)]
     address: SocketAddr,
     /// A connection string to a Postgres database
     #[arg(
@@ -115,7 +115,7 @@ struct Options {
     #[arg(long, default_value = "flumox", env = "AUTH_USER")]
     user: String,
     /// Whether to use ANSI codes in output
-    #[arg(long, default_value_t = true, env = "LOG_COLOR", action=ArgAction::Set)]
+    #[arg(long, default_value_t = true, env = "LOG_COLOR", action = ArgAction::Set)]
     color: bool,
 }
 

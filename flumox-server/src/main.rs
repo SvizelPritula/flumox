@@ -29,7 +29,7 @@ mod view;
 /// A server for hosting puzzle hunts
 struct Options {
     /// The port and address to listen on
-    #[arg(long, default_value_t = SocketAddr::from(([0,0,0,0,0,0,0,0], 8000)), env)]
+    #[arg(long, default_value_t = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 0], 8000)), env)]
     address: SocketAddr,
     /// A connection string to a Postgres database
     #[arg(

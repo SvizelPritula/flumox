@@ -31,7 +31,7 @@ pub async fn login(db: &mut Client, code: &str) -> Result<Option<(SessionToken, 
     let name: String = row.try_get(2)?;
     let game_name: String = row.try_get(3)?;
 
-    let id = Uuid::new_v4();
+    let id = Uuid::now_v7();
     let token = SessionToken::new();
     let time = OffsetDateTime::now_utc();
 

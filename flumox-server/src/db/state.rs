@@ -94,7 +94,7 @@ pub async fn add_action(
         "VALUES ($1, $2, $3, $4, $5, $6)"
     );
 
-    let id = Uuid::new_v4();
+    let id = Uuid::now_v7();
 
     let statement = db.prepare_cached(SET_STATE).await?;
 
