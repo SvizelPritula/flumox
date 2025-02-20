@@ -34,6 +34,7 @@ use crate::{
 #[serde(rename_all = "kebab-case", tag = "type")]
 enum IncomingMessage {
     Auth { token: SessionToken, compress: bool },
+    Ping,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -42,6 +43,7 @@ enum OutgoingMessage<'a> {
     MalformedMessage,
     UnknownToken,
     View { widgets: &'a [WidgetInstanceDelta] },
+    Pong,
     Error { reason: InternalErrorType },
 }
 
@@ -73,6 +75,10 @@ fn views(widgets: &[WidgetInstanceDelta], compress: bool) -> Result<Message, Run
     } else {
         text_message(&payload)
     }
+}
+
+fn pong() -> Result<Message, RunSocketError> {
+    text_message(&OutgoingMessage::Pong)
 }
 
 fn internal_error(error: &InternalError) -> Result<Message, RunSocketError> {
@@ -110,6 +116,7 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
         match socket.recv().await.transpose()? {
             Some(Message::Text(payload)) => match serde_json::from_str(&payload) {
                 Ok(IncomingMessage::Auth { token, compress }) => break (token, compress),
+                Ok(IncomingMessage::Ping) => socket.send(pong()?).await?,
                 Err(_) => {
                     socket.send(malformed_message()?).await?;
                     return Ok(());
@@ -151,8 +158,17 @@ async fn run(socket: &mut WebSocket, pool: Pool, channels: Channels) -> Result<(
     loop {
         let validity = select! {
             result = socket.recv() => {
-                if result.transpose()?.is_none() {
-                    break;
+                match result.transpose()? {
+                    Some(Message::Text(payload)) => match serde_json::from_str(&payload) {
+                        Ok(IncomingMessage::Auth { .. }) => {},
+                        Ok(IncomingMessage::Ping) => socket.send(pong()?).await?,
+                        Err(_) => {
+                            socket.send(malformed_message()?).await?;
+                            return Ok(());
+                        }
+                    },
+                    Some(_) => {}
+                    None => break,
                 }
 
                 Validity::Valid
