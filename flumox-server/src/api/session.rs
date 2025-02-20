@@ -1,13 +1,11 @@
-use std::net::SocketAddr;
-
-use axum::{extract::ConnectInfo, Json};
+use axum::Json;
 use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
 use crate::{
     db::{self, team_info},
     error::InternalError,
-    extract::DbConnection,
+    extract::{DbConnection, Ip},
     session::{Session, SessionToken},
     types::TeamInfo,
 };
@@ -26,18 +24,18 @@ pub struct LoginRequest {
 
 pub async fn login(
     DbConnection(mut db): DbConnection,
-    ConnectInfo(addr): ConnectInfo<SocketAddr>,
+    Ip(address): Ip,
     Json(request): Json<LoginRequest>,
 ) -> Result<Json<LoginResponse>, InternalError> {
     let LoginRequest { access_code: key } = request;
 
     match db::login(&mut db, &key).await {
         Ok(Some((token, team))) => {
-            info!(%addr, team.name, "Login succeeded");
+            info!(address, team.name, "Login succeeded");
             Ok(Json(LoginResponse::Success { token, team }))
         }
         Ok(None) => {
-            info!(%addr, "Login failed, incorrect access key supplied");
+            info!(address, "Login failed, incorrect access key supplied");
             Ok(Json(LoginResponse::IncorrectCode))
         }
         Err(err) => {

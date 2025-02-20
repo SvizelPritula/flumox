@@ -5,7 +5,7 @@ members = [
     "flumox-game-tracker",
     "flumox-seed-maker",
     "time-expr",
-    "channel-map",
+    "channel-map", "http-forwarded-header",
 ]
 resolver = "2"
 

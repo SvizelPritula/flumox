@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use axum::{
     extract::{ConnectInfo, FromRef, FromRequestParts},
-    http::{request::Parts, StatusCode},
+    http::{request::Parts, HeaderName, StatusCode},
     response::{IntoResponse, Response},
     Json, RequestPartsExt,
 };
@@ -16,7 +16,7 @@ use crate::{
     session::{Session, SessionToken, X_AUTH_TOKEN},
 };
 
-use std::net::SocketAddr;
+use std::{convert::Infallible, net::SocketAddr};
 
 pub struct DbConnection(pub Object);
 
@@ -89,13 +89,8 @@ where
                 match get_session_from_pool(&pool, token).await {
                     Ok(Some(session)) => Ok(session),
                     Ok(None) => {
-                        if let Ok(ConnectInfo(addr)) = parts.extract().await {
-                            let addr: SocketAddr = addr;
-                            info!(%addr, "Invalid session token supplied");
-                        } else {
-                            warn!("Failed to get client's IP");
-                            info!("Invalid session token supplied");
-                        }
+                        let Ip(address) = parts.extract().await.unwrap_or_else(|e| match e {});
+                        info!(address, "Invalid session token supplied");
 
                         Err(SessionExtractError::SessionError(
                             SessionError::InvalidToken,
@@ -108,6 +103,58 @@ where
                 }
             }
         }
+    }
+}
+
+pub struct ForwardedIp(String);
+
+#[async_trait]
+impl<S> FromRequestParts<S> for ForwardedIp {
+    type Rejection = RealIpError;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        static FORWARDED: HeaderName = HeaderName::from_static("forwaded");
+
+        let elements = http_forwarded_header::parse(
+            parts
+                .headers
+                .get_all(&FORWARDED)
+                .iter()
+                .map(|v| v.as_bytes()),
+        )
+        .map_err(|_| RealIpError::MalformedHeader)?;
+
+        let ip = elements
+            .into_iter()
+            .last()
+            .ok_or(RealIpError::NoHeader)?
+            .r#for
+            .ok_or(RealIpError::NoFor)?;
+
+        Ok(ForwardedIp(ip))
+    }
+}
+
+pub struct Ip(pub String);
+
+#[async_trait]
+impl<S> FromRequestParts<S> for Ip {
+    type Rejection = Infallible;
+
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
+        if let Ok(ForwardedIp(ip)) = parts.extract().await {
+            return Ok(Ip(ip));
+        }
+
+        warn!("Request has a missing or invalid Forwarded header.");
+
+        if let Ok(ConnectInfo(ip)) = parts.extract().await {
+            return Ok(Ip(SocketAddr::to_string(&ip)));
+        }
+
+        warn!("Request has no IP associated with it.");
+
+        Ok(Ip(String::from("unknown")))
     }
 }
 
@@ -139,6 +186,17 @@ pub enum SessionTokenExtractError {
     MalformedToken,
 }
 
+#[derive(Debug, Clone, Error, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum RealIpError {
+    #[error("no Forwarded header was found")]
+    NoHeader,
+    #[error("Forwarded header was invalid")]
+    MalformedHeader,
+    #[error("Forwarded header didn't contain a for key")]
+    NoFor,
+}
+
 impl IntoResponse for SessionError {
     fn into_response(self) -> Response {
         (StatusCode::UNAUTHORIZED, Json(ErrorResponse::new(self))).into_response()
@@ -157,5 +215,11 @@ impl IntoResponse for SessionExtractError {
 impl IntoResponse for SessionTokenExtractError {
     fn into_response(self) -> Response {
         (StatusCode::UNAUTHORIZED, Json(ErrorResponse::new(self))).into_response()
+    }
+}
+
+impl IntoResponse for RealIpError {
+    fn into_response(self) -> Response {
+        StatusCode::BAD_REQUEST.into_response()
     }
 }

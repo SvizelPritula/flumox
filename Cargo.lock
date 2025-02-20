@@ -522,6 +522,7 @@ dependencies = [
  "futures",
  "getrandom 0.2.15",
  "http 0.2.12",
+ "http-forwarded-header",
  "indexmap",
  "serde",
  "serde_json",
@@ -753,6 +754,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "http-forwarded-header"
+version = "0.1.0"
+dependencies = [
+ "nom",
+]
+
+[[package]]
 name = "http-range-header"
 version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -965,6 +973,15 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.52.0",
+]
+
+[[package]]
+name = "nom"
+version = "8.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "df9761775871bdef83bee530e60050f7e54b1105350d6884eb0fb4f46c2f9405"
+dependencies = [
+ "memchr",
 ]
 
 [[package]]

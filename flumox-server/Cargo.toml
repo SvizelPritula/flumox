@@ -17,6 +17,7 @@ flumox = { path = "../flumox" }
 futures = "0.3.30"
 getrandom = "0.2.15"
 http = "0.2.12"
+http-forwarded-header = { version = "0.1.0", path = "../http-forwarded-header" }
 indexmap = "2.2.6"
 serde = { version = "1.0.204", features = ["derive"] }
 serde_json = "1.0.120"
