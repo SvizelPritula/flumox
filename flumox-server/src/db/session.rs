@@ -8,7 +8,15 @@ use crate::{
     types::{GameInfo, TeamInfo},
 };
 
-pub async fn login(db: &mut Client, code: &str) -> Result<Option<(SessionToken, TeamInfo)>, Error> {
+#[derive(Debug, Clone)]
+pub struct LoginResult {
+    pub game: Uuid,
+    pub team: Uuid,
+    pub token: SessionToken,
+    pub info: TeamInfo
+}
+
+pub async fn login(db: &mut Client, code: &str) -> Result<Option<LoginResult>, Error> {
     const TEAM_BY_KEY: &str = concat!(
         "SELECT team.game, team.id, team.name, game.name ",
         "FROM team INNER JOIN game ON game.id = team.game ",
@@ -46,7 +54,7 @@ pub async fn login(db: &mut Client, code: &str) -> Result<Option<(SessionToken, 
         game: GameInfo { name: game_name },
     };
 
-    Ok(Some((token, info)))
+    Ok(Some(LoginResult { game, team, token, info }))
 }
 
 pub async fn team_by_session_token(

@@ -88,7 +88,7 @@ pub async fn add_action(
     widget: Uuid,
     time: OffsetDateTime,
     action: &Action,
-) -> Result<(), Error> {
+) -> Result<Uuid, Error> {
     const SET_STATE: &str = concat!(
         "INSERT INTO action (id, game, team, widget, time, payload) ",
         "VALUES ($1, $2, $3, $4, $5, $6)"
@@ -104,7 +104,7 @@ pub async fn add_action(
     )
     .await?;
 
-    Ok(())
+    Ok(id)
 }
 
 #[derive(Debug, Error)]

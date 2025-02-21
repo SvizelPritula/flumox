@@ -90,7 +90,7 @@ where
                     Ok(Some(session)) => Ok(session),
                     Ok(None) => {
                         let Ip(address) = parts.extract().await.unwrap_or_else(|e| match e {});
-                        info!(address, "Invalid session token supplied");
+                        info!(address, "Invalid session token supplied by {address}");
 
                         Err(SessionExtractError::SessionError(
                             SessionError::InvalidToken,

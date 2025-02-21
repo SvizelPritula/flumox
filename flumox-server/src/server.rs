@@ -80,7 +80,7 @@ pub async fn serve(state: State, address: SocketAddr, serve: Option<PathBuf>) ->
             X_AUTH_TOKEN.clone(),
         )));
 
-    info!(%address, "Server started");
+    info!("Server listening on {address}");
 
     axum::serve(
         TcpListener::bind(address).await?,

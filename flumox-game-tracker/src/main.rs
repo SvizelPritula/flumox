@@ -82,7 +82,7 @@ async fn serve(state: State, address: SocketAddr, creds: Option<Credentials>) ->
         .layer(TraceLayer::new_for_http())
         .with_state(state);
 
-    info!(%address, "Server started");
+    info!("Server listening on {address}");
 
     axum::serve(TcpListener::bind(address).await?, app.into_make_service()).await?;
 

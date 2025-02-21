@@ -2,7 +2,7 @@ use std::{future::poll_fn, time::Duration};
 
 use tokio::{time::sleep, try_join};
 use tokio_postgres::{AsyncMessage, Config, NoTls, Notification};
-use tracing::{info, warn};
+use tracing::{error, info, warn};
 
 use crate::types::TeamId;
 
@@ -66,7 +66,7 @@ pub async fn listen(config: Config, channels: ChannelSender) {
                 warn!("Connection to database closed, reconnecting");
             }
             Err(error) => {
-                warn!("Listening for messages failed (reconnecting): {error}");
+                error!("Listening for messages failed (reconnecting): {error}");
             }
         }
 

@@ -9,7 +9,7 @@ use thiserror::Error;
 use time::OffsetDateTime;
 use tokio::time::sleep;
 use tokio_postgres::{error::SqlState, IsolationLevel};
-use tracing::{info, warn};
+use tracing::{error, info, warn};
 use uuid::Uuid;
 
 use crate::{
@@ -87,7 +87,7 @@ pub async fn submit_action(
     let time = OffsetDateTime::now_utc();
     let mut retries = RETRY_DURATIONS.iter().copied();
 
-    info!(%game, %team, %time, %widget, ?action, "Action submitted");
+    info!(%game, %team, %widget, %time, "Action by {team} for {widget} received: {action:?}");
 
     loop {
         match run(db, game, team, widget, &action, time).await {
@@ -109,14 +109,14 @@ pub async fn submit_action(
             Err(ProcessActionError::Db(error)) => match error.code() {
                 Some(&SqlState::T_R_SERIALIZATION_FAILURE | &SqlState::T_R_DEADLOCK_DETECTED) => {
                     if let Some(delay) = retries.next() {
-                        warn!(
+                        warn!(%game, %team, %widget, %time,
+                            "Retrying transaction in {delay} due to error: {error}",
                             delay = delay.as_millis(),
-                            "retrying transaction in due to error: {error}"
                         );
 
                         sleep(delay).await;
                     } else {
-                        warn!("exhausted transaction retries with error: {error}");
+                        error!(%game, %team, %widget, %time, "Exhausted transaction retries with error: {error}");
 
                         break Err(error.into());
                     }

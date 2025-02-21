@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use tracing::{error, info};
 
 use crate::{
-    db::{self, team_info},
+    db::{self, team_info, LoginResult},
     error::InternalError,
     extract::{DbConnection, Ip},
     session::{Session, SessionToken},
@@ -30,16 +30,21 @@ pub async fn login(
     let LoginRequest { access_code: key } = request;
 
     match db::login(&mut db, &key).await {
-        Ok(Some((token, team))) => {
-            info!(address, team.name, "Login succeeded");
-            Ok(Json(LoginResponse::Success { token, team }))
+        Ok(Some(LoginResult {
+            game,
+            team,
+            token,
+            info,
+        })) => {
+            info!(address, %game, %team, "Login succeeded for {name} ({team}) by {address}", name=info.name);
+            Ok(Json(LoginResponse::Success { token, team: info }))
         }
         Ok(None) => {
-            info!(address, "Login failed, incorrect access key supplied");
+            info!(address, "Login failed, incorrect access key supplied by {address}");
             Ok(Json(LoginResponse::IncorrectCode))
         }
         Err(err) => {
-            error!("Failed to verify access code: {err}");
+            error!(address, "Failed to verify access code: {err}");
             Err(err.into())
         }
     }
