@@ -7,10 +7,12 @@
   import Timer from "../../Timer.svelte";
   import Time from "../../Time.svelte";
   import { submitButton, timeSpent } from "$translations";
+  import Details from "../../Details.svelte";
 
   export let view: PromptView;
   export let id: string;
   export let disabled: boolean;
+  export let obsolete: boolean;
 
   let answer = "";
 
@@ -27,51 +29,51 @@
   }
 </script>
 
-<h2>{view.name}</h2>
+<Details name={view.name} open={!obsolete}>
+  {#each view.details as detail}
+    <p>{detail}</p>
+  {/each}
 
-{#each view.details as detail}
-  <p>{detail}</p>
-{/each}
+  {#if view.time != null}
+    <p>
+      {timeSpent}
+      {#if view.time.type == "solving"}
+        <Timer time={view.time.since} direction="up" />
+      {:else if view.time.type == "solved"}
+        <Time duration={parseFloat(view.time.after) * 1000} />
+      {/if}
+    </p>
+  {/if}
 
-{#if view.time != null}
-  <p>
-    {timeSpent}
-    {#if view.time.type == "solving"}
-      <Timer time={view.time.since} direction="up" />
-    {:else if view.time.type == "solved"}
-      <Time duration={parseFloat(view.time.after) * 1000} />
-    {/if}
-  </p>
-{/if}
+  <form on:submit|preventDefault={submit}>
+    <label class={label}>
+      <div>{view.prompt}</div>
 
-<form on:submit|preventDefault={submit}>
-  <label class={label}>
-    <div>{view.prompt}</div>
+      {#if view.solution == null}
+        <input
+          bind:value={answer}
+          type="text"
+          autocomplete="off"
+          disabled={formDisabled}
+          class={input}
+        />
+      {:else}
+        <input
+          value={view.solution}
+          type="text"
+          autocomplete="off"
+          disabled={true}
+          class={input}
+        />
+      {/if}
+    </label>
 
-    {#if view.solution == null}
-      <input
-        bind:value={answer}
-        type="text"
-        autocomplete="off"
-        disabled={formDisabled}
-        class={input}
-      />
-    {:else}
-      <input
-        value={view.solution}
-        type="text"
-        autocomplete="off"
-        disabled={true}
-        class={input}
-      />
-    {/if}
-  </label>
+    <button type="submit" disabled={formDisabled} class={button}>
+      {view.submit_button ?? submitButton}
+    </button>
+  </form>
 
-  <button type="submit" disabled={formDisabled} class={button}>
-    {view.submit_button ?? submitButton}
-  </button>
-</form>
-
-{#each view.hints as hint}
-  <Hint {hint} disabled={formDisabled} widget={id} on:action />
-{/each}
+  {#each view.hints as hint}
+    <Hint {hint} disabled={formDisabled} widget={id} on:action />
+  {/each}
+</Details>

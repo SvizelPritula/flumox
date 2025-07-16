@@ -11,11 +11,17 @@
 
 <div class:obsolete={view.obsolete}>
   {#if view.view.type == "prompt"}
-    <Prompt view={view.view} id={view.id} {disabled} on:action />
+    <Prompt
+      view={view.view}
+      id={view.id}
+      {disabled}
+      obsolete={view.obsolete}
+      on:action
+    />
   {:else if view.view.type == "text"}
-    <Text view={view.view} />
+    <Text view={view.view} obsolete={view.obsolete} />
   {:else if view.view.type == "countdown"}
-    <Countdown view={view.view} />
+    <Countdown view={view.view} obsolete={view.obsolete} />
   {:else}
     {unknownView}
   {/if}
