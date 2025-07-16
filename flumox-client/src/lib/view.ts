@@ -3,7 +3,7 @@ export interface PromptView {
     name: string,
     details: string[],
     prompt: string,
-    submit_button: string,
+    submit_button: string | null,
     disabled: boolean,
     solution?: string,
     hints: Hint[],
@@ -20,7 +20,7 @@ export type Hint = {
     time: string
 } | {
     state: "available",
-    button: string
+    button: string | null
 } | {
     state: "taken",
     content: string[]

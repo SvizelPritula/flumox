@@ -1,9 +1,10 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte";
-  import type { Hint, PromptView } from "../../../lib/view";
-  import { button, input, label } from "../../../styles/forms.module.css";
+  import type { Hint } from "../../../lib/view";
+  import { button } from "../../../styles/forms.module.css";
   import type { Action } from "../../../lib/action";
   import Timer from "../../Timer.svelte";
+  import { takeHintButton } from "$translations";
 
   export let hint: Hint;
   export let widget: string;
@@ -29,7 +30,7 @@
 {:else if hint.state == "available"}
   <form on:submit|preventDefault={take}>
     <button type="submit" {disabled} class={button}>
-      {hint.button}
+      {hint.button ?? takeHintButton}
     </button>
   </form>
 {:else}

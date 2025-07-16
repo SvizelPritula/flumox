@@ -15,6 +15,12 @@ declare module "$translations" {
     const loginIncorrect: string;
 
     const timeSpent: string;
+    const submitButton: string;
+    const takeHintButton: string;
+
+    const solutionCorrect: string;
+    const solutionIncorrect: string;
+    const hintTaken: string;
 
     const settingsOpen: string;
     const settingsClose: string;

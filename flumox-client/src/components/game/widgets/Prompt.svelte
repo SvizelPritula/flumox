@@ -6,7 +6,7 @@
   import Hint from "./Hint.svelte";
   import Timer from "../../Timer.svelte";
   import Time from "../../Time.svelte";
-  import { timeSpent } from "$translations";
+  import { submitButton, timeSpent } from "$translations";
 
   export let view: PromptView;
   export let id: string;
@@ -68,7 +68,7 @@
   </label>
 
   <button type="submit" disabled={formDisabled} class={button}>
-    {view.submit_button}
+    {view.submit_button ?? submitButton}
   </button>
 </form>
 

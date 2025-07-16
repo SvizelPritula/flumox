@@ -14,6 +14,12 @@ loginSuccess: Přihlášen tým
 loginIncorrect: Tento přístupový kód není správný.
 
 timeSpent: "Strávili jste tu:"
+submitButton: Odeslat
+takeHintButton: Odemknout
+
+solutionCorrect: Odpověď přijata.
+solutionIncorrect: Vaše odpověď je špatně.
+hintTaken: Nápověda odemčena.
 
 settingsOpen: nastavení
 settingsClose: zpět do hry

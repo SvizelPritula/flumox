@@ -10,6 +10,7 @@ use crate::{
     expr::{Environment, Expr},
     solution::Solution,
     text::Text,
+    toast::Message,
     view_context::ViewContext,
     ActionError, EvalResult, Instance, Toast, ToastType,
 };
@@ -25,7 +26,9 @@ pub struct Config {
     disabled: Expr,
     #[serde(default)]
     hints: Vec<HintConfig>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     on_solution_correct: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     on_solution_incorrect: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     solution_exclusion_group: Option<String>,
@@ -54,7 +57,8 @@ pub struct View {
 pub struct Style {
     pub name: String,
     prompt: String,
-    submit_button: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    submit_button: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -72,7 +76,9 @@ struct HintConfig {
     available: Expr,
     #[serde(default = "Expr::always")]
     visible: Expr,
-    take_button: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    take_button: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     on_hint_taken: Option<String>,
 }
 
@@ -93,7 +99,8 @@ enum HintStateView {
         time: OffsetDateTime,
     },
     Available {
-        button: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        button: Option<String>,
     },
     Taken {
         content: Vec<String>,
@@ -253,11 +260,14 @@ impl Config {
                 .unwrap_or_else(|| action.answer.to_owned());
 
             if banned.contains(canonical_text.as_str()) {
-                return Ok(ActionEffect::with_toast(
-                    self.on_solution_incorrect
+                return Ok(ActionEffect::with_toast(Toast {
+                    message: self
+                        .on_solution_incorrect
                         .clone()
-                        .map(|text| Toast::new(text, ToastType::Danger)),
-                ));
+                        .map(Message::Custom)
+                        .unwrap_or(Message::SolutionIncorrect),
+                    class: ToastType::Danger,
+                }));
             }
 
             let mut state = state.clone();
@@ -269,16 +279,24 @@ impl Config {
 
             Ok(ActionEffect::new(
                 Some(state),
-                self.on_solution_correct
-                    .clone()
-                    .map(|text| Toast::new(text, ToastType::Success)),
+                Some(Toast {
+                    message: self
+                        .on_solution_correct
+                        .clone()
+                        .map(Message::Custom)
+                        .unwrap_or(Message::SolutionCorrect),
+                    class: ToastType::Success,
+                }),
             ))
         } else {
-            Ok(ActionEffect::with_toast(
-                self.on_solution_incorrect
+            return Ok(ActionEffect::with_toast(Toast {
+                message: self
+                    .on_solution_incorrect
                     .clone()
-                    .map(|text| Toast::new(text, ToastType::Danger)),
-            ))
+                    .map(Message::Custom)
+                    .unwrap_or(Message::SolutionIncorrect),
+                class: ToastType::Danger,
+            }));
         }
     }
 
@@ -318,9 +336,14 @@ impl Config {
 
         Ok(ActionEffect::new(
             Some(state),
-            hint.on_hint_taken
-                .clone()
-                .map(|text| Toast::new(text, ToastType::Success)),
+            Some(Toast {
+                message: hint
+                    .on_hint_taken
+                    .clone()
+                    .map(Message::Custom)
+                    .unwrap_or(Message::HintTaken),
+                class: ToastType::Success,
+            }),
         ))
     }
 }

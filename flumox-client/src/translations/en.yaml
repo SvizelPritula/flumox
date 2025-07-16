@@ -13,7 +13,13 @@ loginButton: Submit
 loginSuccess: Logged in successfuly as team
 loginIncorrect: Entered access code is not correct.
 
-timeSpent: "You have spent here:"
+timeSpent: "You have been here for:"
+submitButton: Submit
+takeHintButton: Unlock
+
+solutionCorrect: Answer accepted.
+solutionIncorrect: Your answer was incorrect.
+hintTaken: Hint unlocked.
 
 settingsOpen: settings
 settingsClose: back to game
