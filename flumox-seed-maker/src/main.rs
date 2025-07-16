@@ -6,7 +6,7 @@ use std::{
     path::PathBuf,
 };
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use clap::Parser;
 use postgres_protocol::escape::escape_literal;
 use serde::{Deserialize, Serialize};
@@ -186,6 +186,45 @@ impl Game {
     }
 }
 
+const PREV_IDENT_KEY: &str = "{prev}";
+
+fn preprocess(game: &mut Game) -> Result<()> {
+    fn replace(value: &mut Value, prev_ident: &Option<String>) -> Result<()> {
+        match value {
+            Value::String(string) => {
+                if string.contains(PREV_IDENT_KEY) {
+                    let value = prev_ident.as_ref().ok_or_else(|| {
+                        anyhow!("Cannot replace {PREV_IDENT_KEY} in first widget.")
+                    })?;
+
+                    *string = string.replace(PREV_IDENT_KEY, &value);
+                }
+            }
+            Value::Array(values) => {
+                for value in values {
+                    replace(value, prev_ident)?;
+                }
+            }
+            Value::Object(map) => {
+                for value in map.values_mut() {
+                    replace(value, prev_ident)?;
+                }
+            }
+            Value::Null | Value::Bool(_) | Value::Number(_) => {}
+        }
+
+        Ok(())
+    }
+
+    let mut prev_ident = None;
+    for widget in &mut game.widgets {
+        replace(&mut widget.config, &prev_ident)?;
+        prev_ident = Some(widget.ident.clone());
+    }
+
+    Ok(())
+}
+
 fn main() -> Result<()> {
     let opts = Options::parse();
 
@@ -198,7 +237,8 @@ fn main() -> Result<()> {
         }
     };
 
-    let game: Game = json5::from_str(&input)?;
+    let mut game: Game = json5::from_str(&input)?;
+    preprocess(&mut game)?;
 
     fn generate(mut output: impl Write, game: Game, opts: Options) -> Result<()> {
         if opts.patch {
