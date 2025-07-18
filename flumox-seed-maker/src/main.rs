@@ -10,7 +10,7 @@ use anyhow::{anyhow, bail, Result};
 use clap::Parser;
 use postgres_protocol::escape::escape_literal;
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
+use serde_json::{Map, Value};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy)]
@@ -35,6 +35,7 @@ struct Widget {
 struct Team {
     name: String,
     access_code: String,
+    #[serde(default = "empty_object")]
     attributes: Value,
 }
 
@@ -45,6 +46,10 @@ struct Game {
     widgets: Vec<Widget>,
     #[serde(default)]
     teams: Vec<Team>,
+}
+
+fn empty_object() -> Value {
+    Value::Object(Map::new())
 }
 
 #[derive(Debug, Clone, Parser)]
@@ -186,28 +191,54 @@ impl Game {
     }
 }
 
-const PREV_IDENT_KEY: &str = "{prev}";
-
 fn preprocess(game: &mut Game) -> Result<()> {
-    fn replace(value: &mut Value, prev_ident: &Option<String>) -> Result<()> {
+    fn replace_templates_in_string(
+        str: &str,
+        mut replacer: impl FnMut(String) -> Result<String>,
+    ) -> Result<String> {
+        let mut chars = str.chars().peekable();
+        let mut result = String::new();
+
+        while let Some(char) = chars.next() {
+            if char == '@' && chars.next_if_eq(&'[').is_some() {
+                let mut name = String::new();
+
+                loop {
+                    match chars.next() {
+                        Some(']') => break,
+                        Some(c) => name.push(c),
+                        None => bail!("no ']' to close open '@['"),
+                    }
+                }
+
+                result.push_str(&replacer(name)?);
+            } else {
+                result.push(char);
+            }
+        }
+
+        Ok(result)
+    }
+
+    fn replace(value: &mut Value, idents: &[String], idx: usize) -> Result<()> {
         match value {
             Value::String(string) => {
-                if string.contains(PREV_IDENT_KEY) {
-                    let value = prev_ident.as_ref().ok_or_else(|| {
-                        anyhow!("Cannot replace {PREV_IDENT_KEY} in first widget.")
-                    })?;
-
-                    *string = string.replace(PREV_IDENT_KEY, &value);
-                }
+                *string = replace_templates_in_string(&string, |s| {
+                    let offset: isize = s.parse()?;
+                    idx.checked_add_signed(offset)
+                        .and_then(|i| idents.get(i))
+                        .cloned()
+                        .ok_or_else(|| anyhow!("invalid index {offset}"))
+                })?;
             }
             Value::Array(values) => {
                 for value in values {
-                    replace(value, prev_ident)?;
+                    replace(value, idents, idx)?;
                 }
             }
             Value::Object(map) => {
                 for value in map.values_mut() {
-                    replace(value, prev_ident)?;
+                    replace(value, idents, idx)?;
                 }
             }
             Value::Null | Value::Bool(_) | Value::Number(_) => {}
@@ -216,10 +247,10 @@ fn preprocess(game: &mut Game) -> Result<()> {
         Ok(())
     }
 
-    let mut prev_ident = None;
-    for widget in &mut game.widgets {
-        replace(&mut widget.config, &prev_ident)?;
-        prev_ident = Some(widget.ident.clone());
+    let idents: Vec<String> = game.widgets.iter().map(|w| w.ident.clone()).collect();
+
+    for (idx, widget) in game.widgets.iter_mut().enumerate() {
+        replace(&mut widget.config, &idents, idx)?;
     }
 
     Ok(())

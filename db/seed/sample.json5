@@ -1,0 +1,68 @@
+{
+  name: "Another sample game",
+  widgets: [
+    {
+      ident: "intro",
+      config: {
+        type: "text",
+        heading: "How to play",
+        content: [
+          "Welcome! You will be using this web app to record your in-game progress. You can use this app to submit your answers and get hints.",
+          "Note that this is a progressive web app, meaning you should be able to install it on most platforms. You should also be able to view any information offline, but you will need an internet connection to submit anything.",
+        ],
+        visible: "always",
+      },
+    },
+
+    {
+      ident: "first",
+      config: {
+        type: "prompt",
+        name: "First question",
+        details: [],
+        prompt: "What is 1 + 0?",
+        solutions: [
+          { type: "alphanumeric", solution: "one" },
+          { type: "number", solution: 1 },
+        ],
+        visible: "always",
+      },
+    },
+
+    {
+      ident: "second",
+      config: {
+        type: "prompt",
+        name: "Second question",
+        details: [],
+        prompt: "What is 1 + 1?",
+        solutions: [
+          { type: "alphanumeric", solution: "two" },
+          { type: "number", solution: 2 },
+        ],
+        visible: "@[-1].solved",
+      },
+    },
+
+    {
+      ident: "third",
+      config: {
+        type: "prompt",
+        name: "Third question",
+        details: [],
+        prompt: "What is 2 * 1 + 1?",
+        solutions: [
+          { type: "alphanumeric", solution: "three" },
+          { type: "number", solution: 3 },
+        ],
+        visible: "@[-2].solved",
+      },
+    },
+  ],
+  teams: [
+    {
+      name: "Player",
+      access_code: "player",
+    },
+  ],
+}
