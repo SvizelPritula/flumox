@@ -1,5 +1,6 @@
 {
-  name: "Another sample game",
+  name: "A sample game",
+
   widgets: [
     {
       ident: "intro",
@@ -17,48 +18,51 @@
     {
       ident: "first",
       config: {
-        type: "prompt",
+        "@mixin": "cipher",
         name: "First question",
-        details: [],
-        prompt: "What is 1 + 0?",
         solutions: [
           { type: "alphanumeric", solution: "one" },
           { type: "number", solution: 1 },
         ],
-        visible: "always",
       },
     },
 
     {
       ident: "second",
       config: {
-        type: "prompt",
+        "@mixin": "cipher",
         name: "Second question",
-        details: [],
-        prompt: "What is 1 + 1?",
         solutions: [
           { type: "alphanumeric", solution: "two" },
           { type: "number", solution: 2 },
         ],
-        visible: "@[-1].solved",
       },
     },
 
     {
       ident: "third",
       config: {
-        type: "prompt",
+        "@mixin": "cipher",
         name: "Third question",
-        details: [],
-        prompt: "What is 2 * 1 + 1?",
         solutions: [
           { type: "alphanumeric", solution: "three" },
           { type: "number", solution: 3 },
         ],
-        visible: "@[-2].solved",
       },
     },
   ],
+
+  mixins: {
+    cipher: {
+      type: "prompt",
+
+      details: [],
+      prompt: "What is the answer?",
+
+      visible: "@[-1].solved",
+    },
+  },
+
   teams: [
     {
       name: "Player",

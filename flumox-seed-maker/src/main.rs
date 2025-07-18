@@ -1,5 +1,5 @@
 use std::{
-    collections::HashSet,
+    collections::{HashMap, HashSet},
     fmt::{Display, Formatter},
     fs::{self, File},
     io::{stdin, stdout, Read, Write},
@@ -10,7 +10,7 @@ use anyhow::{anyhow, bail, Result};
 use clap::Parser;
 use postgres_protocol::escape::escape_literal;
 use serde::{Deserialize, Serialize};
-use serde_json::{Map, Value};
+use serde_json::{map::Entry, Map, Value};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy)]
@@ -46,6 +46,8 @@ struct Game {
     widgets: Vec<Widget>,
     #[serde(default)]
     teams: Vec<Team>,
+    #[serde(default)]
+    mixins: HashMap<String, Value>,
 }
 
 fn empty_object() -> Value {
@@ -220,7 +222,7 @@ fn preprocess(game: &mut Game) -> Result<()> {
         Ok(result)
     }
 
-    fn replace(value: &mut Value, idents: &[String], idx: usize) -> Result<()> {
+    fn replace_templates(value: &mut Value, idents: &[String], idx: usize) -> Result<()> {
         match value {
             Value::String(string) => {
                 *string = replace_templates_in_string(&string, |s| {
@@ -233,12 +235,12 @@ fn preprocess(game: &mut Game) -> Result<()> {
             }
             Value::Array(values) => {
                 for value in values {
-                    replace(value, idents, idx)?;
+                    replace_templates(value, idents, idx)?;
                 }
             }
             Value::Object(map) => {
                 for value in map.values_mut() {
-                    replace(value, idents, idx)?;
+                    replace_templates(value, idents, idx)?;
                 }
             }
             Value::Null | Value::Bool(_) | Value::Number(_) => {}
@@ -247,10 +249,52 @@ fn preprocess(game: &mut Game) -> Result<()> {
         Ok(())
     }
 
+    const MIXIN_KEY: &str = "@mixin";
+
+    fn apply_mixins(value: &mut Value, mixins: &HashMap<String, Value>) -> Result<()> {
+        match value {
+            Value::Object(map) => {
+                if let Entry::Occupied(entry) = map.entry(MIXIN_KEY) {
+                    let value = entry.remove();
+                    let name = value
+                        .as_str()
+                        .ok_or_else(|| anyhow!("@mixin name must be a string"))?;
+
+                    let value = mixins
+                        .get(name)
+                        .ok_or_else(|| anyhow!("unknown @mixin \"{name}\""))?;
+
+                    let source_map = value
+                        .as_object()
+                        .ok_or_else(|| anyhow!("@mixin must be an object"))?;
+
+                    for (key, value) in source_map {
+                        if !map.contains_key(key) {
+                            map.insert(key.clone(), value.clone());
+                        }
+                    }
+                }
+
+                for value in map.values_mut() {
+                    apply_mixins(value, mixins)?;
+                }
+            }
+            Value::Array(values) => {
+                for value in values {
+                    apply_mixins(value, mixins)?;
+                }
+            }
+            Value::Null | Value::Bool(_) | Value::Number(_) | Value::String(_) => {}
+        }
+
+        Ok(())
+    }
+
     let idents: Vec<String> = game.widgets.iter().map(|w| w.ident.clone()).collect();
 
     for (idx, widget) in game.widgets.iter_mut().enumerate() {
-        replace(&mut widget.config, &idents, idx)?;
+        apply_mixins(&mut widget.config, &game.mixins)?;
+        replace_templates(&mut widget.config, &idents, idx)?;
     }
 
     Ok(())
