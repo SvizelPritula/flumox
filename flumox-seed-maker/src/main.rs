@@ -43,6 +43,8 @@ struct Team {
 struct Game {
     name: String,
     #[serde(default)]
+    id: Option<Uuid>,
+    #[serde(default)]
     widgets: Vec<Widget>,
     #[serde(default)]
     teams: Vec<Team>,
@@ -316,14 +318,16 @@ fn main() -> Result<()> {
     preprocess(&mut game)?;
 
     fn generate(mut output: impl Write, game: Game, opts: Options) -> Result<()> {
+        let id = opts.game_id.or(game.id);
+
         if opts.patch {
-            let Some(id) = opts.game_id else {
+            let Some(id) = id else {
                 bail!("Cannot generate patch without game id");
             };
 
             game.patch(&mut output, id, opts.widgets.into_iter().collect())
         } else {
-            game.seed(&mut output, opts.game_id)
+            game.seed(&mut output, id)
         }
     }
 
