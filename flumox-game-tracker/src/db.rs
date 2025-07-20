@@ -254,6 +254,7 @@ pub async fn prompt_states(
 #[derive(Debug, Clone)]
 pub struct PromptConfig {
     pub id: Uuid,
+    pub ident: String,
     pub config: prompt::Config,
 }
 
@@ -262,7 +263,7 @@ pub async fn prompts(
     game: Uuid,
 ) -> Result<Vec<PromptConfig>, InternalError> {
     const SOLVED: &str = concat!(
-        "SELECT widget.id, widget.config ",
+        "SELECT widget.id, widget.ident, widget.config ",
         "FROM widget ",
         "WHERE widget.game = $1 ",
         "AND widget.config->'type' = '\"prompt\"' ",
@@ -276,14 +277,15 @@ pub async fn prompts(
         .into_iter()
         .map(|r| {
             let id = r.try_get(0)?;
-            let Json(config): Json<Config> = r.try_get(1)?;
+            let ident = r.try_get(1)?;
+            let Json(config): Json<Config> = r.try_get(2)?;
 
             let config = match config {
                 Config::Prompt(config) => *config,
                 _ => return Err(InternalError::from(anyhow!("Expected a prompt widget"))),
             };
 
-            Ok(PromptConfig { id, config })
+            Ok(PromptConfig { id, ident, config })
         })
         .collect()
 }

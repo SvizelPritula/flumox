@@ -97,6 +97,7 @@ pub async fn game(
                             tr {
                                 th {
                                     (prompt.config.style.name)
+                                    " (" (prompt.ident) ")"
                                 }
 
                                 @for team in &teams {
