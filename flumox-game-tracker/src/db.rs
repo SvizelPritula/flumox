@@ -2,10 +2,7 @@ use std::collections::HashMap;
 
 use anyhow::anyhow;
 use deadpool_postgres::Transaction;
-use flumox::{
-    widget::prompt::{self, SolutionDetails},
-    Action, Config, Instance, State,
-};
+use flumox::{widget::prompt, Action, Config, Instance, State};
 use time::OffsetDateTime;
 use tokio_postgres::types::Json;
 use uuid::Uuid;
@@ -212,16 +209,21 @@ pub struct StateKey {
     pub widget: Uuid,
 }
 
-pub async fn solve_times(
+#[derive(Debug, Clone)]
+pub struct PromptState {
+    pub solved: Option<OffsetDateTime>,
+    pub hints: Vec<String>,
+}
+
+pub async fn prompt_states(
     db: &mut Transaction<'_>,
     game: Uuid,
-) -> Result<HashMap<StateKey, OffsetDateTime>, InternalError> {
+) -> Result<HashMap<StateKey, PromptState>, InternalError> {
     const SOLVED: &str = concat!(
-        "SELECT state.team, state.widget, state.state->'solved' ",
+        "SELECT state.team, state.widget, state.state ",
         "FROM state JOIN widget ",
         "ON state.game=widget.game AND state.widget=widget.id ",
         "WHERE state.game = $1 ",
-        "AND state.state->'solved' != 'null' ",
         "AND widget.config->'type' = '\"prompt\"' ",
         "ORDER BY priority"
     );
@@ -234,9 +236,17 @@ pub async fn solve_times(
         .map(|r| {
             let team = r.try_get(0)?;
             let widget = r.try_get(1)?;
-            let Json(SolutionDetails { time, .. }) = r.try_get(2)?;
+            let Json(state): Json<prompt::State> = r.try_get(2)?;
 
-            Ok((StateKey { team, widget }, time))
+            let mut hints: Vec<(&String, &OffsetDateTime)> = state.hints.iter().collect();
+            hints.sort_by_key(|(_, t)| **t);
+
+            let state = PromptState {
+                solved: state.solved.map(|s| s.time),
+                hints: hints.into_iter().map(|(n, _)| n.to_owned()).collect(),
+            };
+
+            Ok((StateKey { team, widget }, state))
         })
         .collect()
 }

@@ -54,7 +54,7 @@ pub async fn game(
 
     let teams = db::teams(&mut client, path.game).await?;
     let prompts = db::prompts(&mut client, path.game).await?;
-    let solve_times = db::solve_times(&mut client, path.game).await?;
+    let prompt_states = db::prompt_states(&mut client, path.game).await?;
     let actions = db::recent_actions(&mut client, path.game).await?;
 
     fn action(action: &RecentActionInfo) -> Markup {
@@ -100,9 +100,19 @@ pub async fn game(
                                 }
 
                                 @for team in &teams {
+                                    @let key = StateKey { team: team.id, widget: prompt.id };
+
                                     td {
-                                        @if let Some(time) = solve_times.get(&StateKey { team: team.id, widget: prompt.id }) {
-                                            (short_time(*time))
+                                        @if let Some(time) = prompt_states.get(&key).and_then(|s| s.solved) {
+                                            (short_time(time))
+                                        }
+
+                                        @if let Some(hints) = prompt_states.get(&key).map(|s| &s.hints).filter(|h| !h.is_empty()) {
+                                            " ("
+                                            @for hint in hints {
+                                                (hint.chars().next().unwrap_or('?'))
+                                            }
+                                            ")"
                                         }
                                     }
                                 }
