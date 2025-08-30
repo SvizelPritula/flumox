@@ -8,7 +8,6 @@ use base64::{
     engine::{general_purpose::URL_SAFE_NO_PAD, GeneralPurpose},
     Engine,
 };
-use getrandom::getrandom;
 use serde::{de, Deserialize, Serialize, Serializer};
 use thiserror::Error;
 use uuid::Uuid;
@@ -25,7 +24,7 @@ impl SessionToken {
 
     pub fn new() -> SessionToken {
         let mut buf = [0; SESSION_BYTES];
-        getrandom(&mut buf).expect("failed to generate session token");
+        getrandom::fill(&mut buf).expect("failed to generate session token");
         SessionToken(buf)
     }
 }

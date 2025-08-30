@@ -48,7 +48,7 @@ enum OutgoingMessage<'a> {
 }
 
 fn text_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
-    Ok(Message::Text(serde_json::to_string(message)?))
+    Ok(Message::Text(serde_json::to_string(message)?.into()))
 }
 
 fn compressed_message(message: &OutgoingMessage) -> Result<Message, RunSocketError> {
@@ -56,7 +56,7 @@ fn compressed_message(message: &OutgoingMessage) -> Result<Message, RunSocketErr
 
     serde_json::to_writer(&mut writer, message)?;
 
-    Ok(Message::Binary(writer.finish()?))
+    Ok(Message::Binary(writer.finish()?.into()))
 }
 
 fn malformed_message() -> Result<Message, RunSocketError> {

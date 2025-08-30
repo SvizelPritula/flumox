@@ -13,7 +13,7 @@ mod tokens;
 
 type Iter<'a> = Peekable<Tokens<'a>>;
 
-pub fn parse(string: &str) -> Result<Expr, EvalError> {
+pub fn parse(string: &'_ str) -> Result<Expr<'_>, EvalError> {
     let mut tokens = Tokens::new(string).peekable();
 
     let expr = parse_add(&mut tokens)?;

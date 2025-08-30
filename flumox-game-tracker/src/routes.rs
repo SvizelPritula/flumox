@@ -162,7 +162,7 @@ pub async fn team(
                 h3 { (config.style.name) " (" (ident) ")" }
                 p {
                     @match state.solved.as_ref() {
-                        Some(details) => "Solved at " i { (datetime(details.time)) },
+                        Some(details) => { "Solved at " i { (datetime(details.time)) } },
                         None => i { "Not solved" },
                     }
                 }

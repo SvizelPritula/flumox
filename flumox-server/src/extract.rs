@@ -1,4 +1,3 @@
-use async_trait::async_trait;
 use axum::{
     extract::{ConnectInfo, FromRef, FromRequestParts},
     http::{request::Parts, HeaderName, StatusCode},
@@ -20,8 +19,7 @@ use std::{convert::Infallible, net::SocketAddr};
 
 pub struct DbConnection(pub Object);
 
-#[async_trait]
-impl<S> FromRequestParts<S> for DbConnection
+impl<S: Sync> FromRequestParts<S> for DbConnection
 where
     Pool: FromRef<S>,
     S: Sync,
@@ -42,8 +40,7 @@ where
 
 struct Credentials(SessionToken);
 
-#[async_trait]
-impl<S> FromRequestParts<S> for Credentials {
+impl<S: Sync> FromRequestParts<S> for Credentials {
     type Rejection = SessionTokenExtractError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
@@ -61,8 +58,7 @@ impl<S> FromRequestParts<S> for Credentials {
     }
 }
 
-#[async_trait]
-impl<S> FromRequestParts<S> for Session
+impl<S: Sync> FromRequestParts<S> for Session
 where
     Pool: FromRef<S>,
     S: Sync,
@@ -108,8 +104,7 @@ where
 
 pub struct ForwardedIp(String);
 
-#[async_trait]
-impl<S> FromRequestParts<S> for ForwardedIp {
+impl<S: Sync> FromRequestParts<S> for ForwardedIp {
     type Rejection = RealIpError;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
@@ -137,8 +132,7 @@ impl<S> FromRequestParts<S> for ForwardedIp {
 
 pub struct Ip(pub String);
 
-#[async_trait]
-impl<S> FromRequestParts<S> for Ip {
+impl<S: Sync> FromRequestParts<S> for Ip {
     type Rejection = Infallible;
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
