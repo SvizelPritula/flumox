@@ -41,8 +41,8 @@ struct State {
 async fn serve(state: State, address: SocketAddr, creds: Option<Credentials>) -> Result<()> {
     let app = Router::new()
         .route("/", get(routes::root))
-        .route("/:game/", get(routes::game))
-        .route("/:game/:team/", get(routes::team))
+        .route("/{game}/", get(routes::game))
+        .route("/{game}/{team}/", get(routes::team))
         .fallback(|| async { not_found("Page") });
 
     let app = if let Some(creds) = creds {
