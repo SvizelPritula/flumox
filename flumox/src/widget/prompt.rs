@@ -289,14 +289,14 @@ impl Config {
                 }),
             ))
         } else {
-            return Ok(ActionEffect::with_toast(Toast {
+            Ok(ActionEffect::with_toast(Toast {
                 message: self
                     .on_solution_incorrect
                     .clone()
                     .map(Message::Custom)
                     .unwrap_or(Message::SolutionIncorrect),
                 class: ToastType::Danger,
-            }));
+            }))
         }
     }
 

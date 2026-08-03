@@ -227,7 +227,7 @@ fn preprocess(game: &mut Game) -> Result<()> {
     fn replace_templates(value: &mut Value, idents: &[String], idx: usize) -> Result<()> {
         match value {
             Value::String(string) => {
-                *string = replace_templates_in_string(&string, |s| {
+                *string = replace_templates_in_string(string, |s| {
                     let offset: isize = s.parse()?;
                     idx.checked_add_signed(offset)
                         .and_then(|i| idents.get(i))
